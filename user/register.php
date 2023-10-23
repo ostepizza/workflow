@@ -103,9 +103,11 @@ if (isset($_POST['submit'])) {
             $stmt->bind_param('ssss', $email, $hashed_password, $firstname, $lastname);
 
             if ($stmt->execute()) {
+                $stmt->close();
                 $feedbackForUser = "User has been successfully registered. You may now log in.<br>";
                 $feedbackColor = "success";
             } else {
+                $stmt->close();
                 $feedbackForUser = "An error occurred while registering.<br>";
             }
         }

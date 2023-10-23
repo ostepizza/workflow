@@ -52,6 +52,7 @@ if (isset($_POST['submit'])) {
                     $feedbackColor = "success";
 
                     $_SESSION['user_id'] = $user_id;
+                    $stmt->close();
 
                     header('Location: ../index.php?loggedin');
                 } else {
@@ -63,6 +64,7 @@ if (isset($_POST['submit'])) {
         } else {
             $feedbackForUser = "An error occurred while logging in.";
         }
+        $stmt->close();
     }
 }
 

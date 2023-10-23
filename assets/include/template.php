@@ -1,10 +1,15 @@
 <?php
 session_start();
 
-function makePage($code, $title="Page", $userFeedback=NULL, $userFeedbackColor="primary") {
+function makePage($code, $title="Page", $userFeedback=NULL, $userFeedbackColor="primary", $requireLogin=false) {
 $pageTitle = $title;
 $currentURL = $_SERVER['REQUEST_URI'];
 $relativePathToRoot = str_repeat('../', (substr_count($currentURL, '/')-2));
+
+if ($requireLogin == true && empty($_SESSION['user_id'])) {
+    header('Location: ../403.php');
+}
+
 echo '
 <!doctype html>
 <html>
@@ -25,7 +30,7 @@ echo '
             <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="' . $relativePathToRoot . '">Home</a>
+                    <a class="nav-link" href="' . $relativePathToRoot . 'index.php">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="' . $relativePathToRoot . 'jobs/index.php">Job listings</a>
