@@ -1,5 +1,5 @@
 <?php
-function makePage($code, $title) {
+function makePage($code, $title, $userFeedback=NULL, $userFeedbackColor="primary") {
 $pageTitle = $title;
 $currentURL = $_SERVER['REQUEST_URI'];
 $relativePathToRoot = str_repeat('../', (substr_count($currentURL, '/')-2));
@@ -57,6 +57,13 @@ echo '
     </nav>
     <main>
         <div class="container">';
+    if (isset($userFeedback)) {
+        echo '
+        <div class="alert alert-' . $userFeedbackColor . ' mt-3" role="alert">
+            ' . $userFeedback . '
+        </div>
+        ';
+    }
     $code();
     echo '
         </div>
@@ -77,7 +84,7 @@ echo '
             </ul>
         </footer>
     </div>
-    <script src="assets/js/bootstrap.bundle.js"></script>
+    <script src="' . $relativePathToRoot . 'assets/js/bootstrap.bundle.js"></script>
 </body>
 </html>'
 ;}                     
