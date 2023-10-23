@@ -13,4 +13,4 @@ function display() {
 <?php
 }
 
-makePage('display', 'Home');
+makePage('display', 'About');
