@@ -109,4 +109,4 @@ function display() {
 <?php
 }
 
-makePage('display', 'Log in', $feedbackForUser, $feedbackColor);
+makePage('display', 'Log in', $feedbackForUser, $feedbackColor, requireNoUser: true);

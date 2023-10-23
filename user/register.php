@@ -184,4 +184,4 @@ function display() {
 <?php
 }
 
-makePage('display', 'Register', $feedbackForUser, $feedbackColor);
+makePage('display', 'Register', $feedbackForUser, $feedbackColor, requireNoUser: true);

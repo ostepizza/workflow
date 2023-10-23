@@ -10,6 +10,7 @@ $conn = createDBConnection(); //Connects to the database
 <div class="row mt-5">
     <div class="col-md-12">
         <h1>User</h1>
+        <a href="edit.php" class="btn btn-primary active" role="button">Edit profile</a><br>
         <?php 
         $user_id = $_SESSION['user_id']; 
 

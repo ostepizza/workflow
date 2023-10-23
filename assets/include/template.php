@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-function makePage($code, $title="Page", $userFeedback=NULL, $userFeedbackColor="primary", $requireLogin=false) {
+function makePage($code, $title="Page", $userFeedback=NULL, $userFeedbackColor="primary", $requireLogin=false, $requireNoUser=false) {
 $pageTitle = $title;
 $currentURL = $_SERVER['REQUEST_URI'];
 $relativePathToRoot = str_repeat('../', (substr_count($currentURL, '/')-2));
 
-if ($requireLogin == true && empty($_SESSION['user_id'])) {
-    header('Location: ../403.php');
+if (($requireLogin && empty($_SESSION['user_id'])) || ($requireNoUser && !empty($_SESSION['user_id']))) {
+    header('Location: ' . $relativePathToRoot . '403.php');
 }
 
 echo '
@@ -36,29 +36,23 @@ echo '
                     <a class="nav-link" href="' . $relativePathToRoot . 'jobs/index.php">Job listings</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="' . $relativePathToRoot . 'company/index.php">Companies</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Dropdown</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">test</a></li>
-                        <li><a class="dropdown-item" href="#">test</a></li>
-                        <li><a class="dropdown-item" href="#">testeeeee</a></li>
-                    </ul>
                 </li>
             </ul>';
             
             if (!empty($_SESSION['user_id'])) {
                 echo '
                 <ul class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="' . $relativePathToRoot . 'user/index.php">My profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="' . $relativePathToRoot . 'user/logout.php">Log out</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Hello, ' . $_SESSION['user_id'] . '!</a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="dropdown-item" href="' . $relativePathToRoot . 'user/index.php">My profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="dropdown-item" href="' . $relativePathToRoot . 'user/logout.php">Log out</a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
                 ';
@@ -67,6 +61,9 @@ echo '
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="' . $relativePathToRoot . 'user/login.php">Log in</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="' . $relativePathToRoot . 'user/register.php">Register</a>
                     </li>
                 </ul>
                 ';
@@ -91,13 +88,21 @@ echo '
     </main>
     <div class="container">
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-            <p class="col-md-4 mb-0 text-muted">&copy; 2022 Workflow</p>
+            <p class="col-md-4 mb-0 text-muted">&copy; ' . date("Y") . ' Workflow</p>
 
             <ul class="nav col-md-4 justify-content-end">
-              <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Home</a></li>
-              <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Job listings</a></li>
-              <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Companies</a></li>
-              <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">About</a></li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 text-muted" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 text-muted" href="#">Job listings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'company/index.php">Company</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 text-muted" href="#">About</a>
+                </li>
             </ul>
         </footer>
     </div>
