@@ -3,6 +3,21 @@
 function display() {
 ?>
 <!-- Content here -->
+<?php
+if(isset($_GET['loggedout'])) {
+    echo('
+    <div class="alert alert-warning mt-3" role="alert">
+        You have been successfully logged out. 
+    </div>
+    ');
+} else if (isset($_GET['loggedin'])) {
+    echo('
+    <div class="alert alert-success mt-3" role="alert">
+        You have been successfully logged in. 
+    </div>
+    ');
+}
+?>
 <div class="row mt-5">
     <div class="col-md-7">
         <h1>There be text</h1>

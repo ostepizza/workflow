@@ -1,12 +1,10 @@
 <?php include_once '../assets/include/template.php';
 
 include("../assets/include/connection.php");
+$conn = createDBConnection(); //Connects to the database
 
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
-
-$conn = createDBConnection(); //Connects to the database
-session_start();
 
 if (isset($_POST['submit'])) {
     $allConditionsMet = true; //Sets up a fail condition if user-input is bad

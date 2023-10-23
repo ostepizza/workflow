@@ -1,5 +1,7 @@
 <?php
-function makePage($code, $title, $userFeedback=NULL, $userFeedbackColor="primary") {
+session_start();
+
+function makePage($code, $title="Page", $userFeedback=NULL, $userFeedbackColor="primary") {
 $pageTitle = $title;
 $currentURL = $_SERVER['REQUEST_URI'];
 $relativePathToRoot = str_repeat('../', (substr_count($currentURL, '/')-2));
@@ -13,14 +15,14 @@ echo '
     <title>' . $pageTitle . ' - Workflow</title>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">Workflow</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" href="' . $relativePathToRoot . '">Workflow</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarsExample07">
+            <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a class="nav-link" href="' . $relativePathToRoot . '">Home</a>
@@ -35,23 +37,37 @@ echo '
                     <a class="nav-link disabled" aria-disabled="true">Disabled</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Dropdown</a>
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Dropdown</a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="#">test</a></li>
                         <li><a class="dropdown-item" href="#">test</a></li>
                         <li><a class="dropdown-item" href="#">testeeeee</a></li>
                     </ul>
                 </li>
-            </ul>
+            </ul>';
             
-            <ul class="navbar-nav mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="' . $relativePathToRoot . 'user/index.php">My profile</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="' . $relativePathToRoot . 'user/login.php">Log in</a>
-                </li>
-            </ul>
+            if (!empty($_SESSION['user_id'])) {
+                echo '
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="' . $relativePathToRoot . 'user/index.php">My profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="' . $relativePathToRoot . 'user/logout.php">Log out</a>
+                    </li>
+                </ul>
+                ';
+            } else {
+                echo '
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="' . $relativePathToRoot . 'user/login.php">Log in</a>
+                    </li>
+                </ul>
+                ';
+            }
+
+            echo '
             </div>
         </div>
     </nav>
@@ -71,10 +87,6 @@ echo '
     <div class="container">
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
             <p class="col-md-4 mb-0 text-muted">&copy; 2022 Workflow</p>
-
-            <a href="/" class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
-              <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
-            </a>
 
             <ul class="nav col-md-4 justify-content-end">
               <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">Home</a></li>
