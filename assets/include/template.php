@@ -35,9 +35,6 @@ echo '
                 <li class="nav-item">
                     <a class="nav-link" href="' . $relativePathToRoot . 'jobs/index.php">Job listings</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-                </li>
             </ul>';
             
             if (!empty($_SESSION['user_id'])) {
@@ -92,16 +89,16 @@ echo '
 
             <ul class="nav col-md-4 justify-content-end">
                 <li class="nav-item">
-                    <a class="nav-link px-2 text-muted" href="#">Home</a>
+                    <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2 text-muted" href="#">Job listings</a>
+                    <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'jobs/index.php">Job listings</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'company/index.php">Company</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2 text-muted" href="#">About</a>
+                    <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'about.php">About</a>
                 </li>
             </ul>
         </footer>
