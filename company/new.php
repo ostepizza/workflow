@@ -6,6 +6,24 @@ $conn = createDBConnection(); // Connects to the database
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
+$user_id = $_SESSION['user_id'];
+
+// Ask database if logged in member is found in the company_management table
+$sql = 'SELECT `company_id` FROM `company_management` WHERE `user_id` = ?';
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $user_id);
+if ($stmt->execute()) {
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0) {
+        // If any rows are found, the user is a part of a company
+        // Redirect to the 403, since users are only supposed to make max 1 company
+        $stmt->close();
+        header('Location: ../403.php');
+    }
+    $stmt->close();
+}
+
 if (isset($_POST['submit'])) {
     $allConditionsMet = true; // Sets up a fail condition if user-input is bad
 
@@ -30,7 +48,6 @@ if (isset($_POST['submit'])) {
         // Get variables needed for the SQL statements
         $name = $_POST['name'];
         $description = $_POST['description'];
-        $user_id = $_SESSION['user_id'];
 
         // Try to find the name provided in the form in the database
         $sql = 'SELECT `name` FROM `company` WHERE `name` = ?';

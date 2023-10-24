@@ -39,5 +39,10 @@ CREATE TABLE `company_management` (
 ) ENGINE = InnoDB;
 
 
+-- Some test data
+INSERT INTO `user` (`id`, `email`, `password`, `first_name`, `last_name`, `telephone`, `location`, `birthday`, `picture`, `cv`, `searchable`, `competence`) VALUES (NULL, 'test@test.net', 'kjhvdf', 'Test', 'User', NULL, NULL, NULL, NULL, NULL, '0', NULL), (NULL, 'jeff@jefferson.net', 'ojhdbf', 'Jeff', 'Jefferson', NULL, NULL, NULL, NULL, NULL, '0', NULL);
+INSERT INTO `user` (`id`, `email`, `password`, `first_name`, `last_name`, `telephone`, `location`, `birthday`, `picture`, `cv`, `searchable`, `competence`) VALUES (NULL, 'bohan@smohan.net', 'ouishdg', 'Bohan', 'Smohan', NULL, NULL, NULL, NULL, NULL, '0', NULL), (NULL, 'ligmerglue@ieat.net', 'ksjhgfv', 'Ligmer', 'Glue', NULL, NULL, NULL, NULL, NULL, '0', NULL);
+INSERT INTO `company` (`id`, `name`, `description`) VALUES (NULL, 'The Testing Company', 'We test things'), (NULL, 'The Pizza Shop', 'We sell pizzas!');
+
 -- Commit the changes
 COMMIT;

@@ -2,6 +2,7 @@
 session_start();
 
 function makePage($code, $title="Page", $userFeedback=NULL, $userFeedbackColor="primary", $requireLogin=false, $requireNoUser=false) {
+
 $pageTitle = $title;
 $currentURL = $_SERVER['REQUEST_URI'];
 $relativePathToRoot = str_repeat('../', (substr_count($currentURL, '/')-2));
@@ -41,7 +42,7 @@ echo '
                 echo '
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Hello, ' . $_SESSION['user_id'] . '!</a>
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Hello, ' . $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] . '!</a>
                         <ul class="dropdown-menu">
                             <li class="nav-item">
                                 <a class="dropdown-item" href="' . $relativePathToRoot . 'user/index.php">My profile</a>

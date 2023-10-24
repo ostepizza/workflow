@@ -36,14 +36,14 @@ if (isset($_POST['submit'])) {
         $email = $_POST['email'];
         $email = strtolower($email);
     
-        $sql = 'SELECT `id`, `password` FROM `user` WHERE `email` = ?';
+        $sql = 'SELECT `id`, `password`, `first_name`, `last_name` FROM `user` WHERE `email` = ?';
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
         if ($stmt->execute()) {
             $stmt->store_result();
     
             if ($stmt->num_rows == 1) {
-                $stmt->bind_result($user_id, $hashed_password);
+                $stmt->bind_result($user_id, $hashed_password, $user_fname, $user_lname);
                 $stmt->fetch();
     
                 // Compare the provided password with the stored hashed password
@@ -52,6 +52,8 @@ if (isset($_POST['submit'])) {
                     $feedbackColor = "success";
 
                     $_SESSION['user_id'] = $user_id;
+                    $_SESSION['user_fname'] = $user_fname;
+                    $_SESSION['user_lname'] = $user_lname;
                     $stmt->close();
 
                     header('Location: ../index.php?loggedin');
