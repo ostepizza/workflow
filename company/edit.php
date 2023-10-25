@@ -52,23 +52,42 @@ if ($stmt->execute()) {
 //Handle the two forms available on the page
 if (isset($_POST['companyUpdate'])) {
     //If the user has pressed the update button
-    echo "Form 1 submitted";
     if (!empty($_POST['name'])) {
         if($_POST['name'] != $company_name) {
-            echo 'name will be updated';
-        } else {
-            echo 'name will not be updated';
+            if(strlen($_POST['name']) <= 100) {
+                $sql = 'UPDATE `company` SET `name` = ? WHERE `company`.`id` = ?';
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param('si', $_POST['name'], $company_id);
+                if ($stmt->execute()) {
+                    $feedbackForUser .= "Company name was updated.<br>";
+                    $feedbackColor = "success";
+                } else {
+                    $feedbackForUser .= "An error occurred.<br>";
+                }
+            } else {
+                $feedbackForUser .= "Company name can not be above 100 characters.<br>";
+            }
         }
     } else {
-        //Error: Name can not be empty
+        $feedbackForUser .= "Company name can not be empty.<br>";
     }
 
     if (!empty($_POST['description'])) {
         if($_POST['description'] != $company_description) {
-            echo 'description will be updated';
-        } else {
-            echo 'description will not be updated';
-        }
+            if(strlen($_POST['description']) <= 500) {
+                $sql = 'UPDATE `company` SET `description` = ? WHERE `company`.`id` = ?';
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param('si', $_POST['description'], $company_id);
+                if ($stmt->execute()) {
+                    $feedbackForUser .= "Company description was updated.<br>";
+                    $feedbackColor = "success";
+                } else {
+                    $feedbackForUser .= "An error occurred.<br>";
+                }
+            } else {
+                $feedbackForUser .= "Company description can not be above 500 characters.<br>";
+            }
+        } 
     }
 } else if (isset($_POST['companyDelete'])) {
     //At this point, the user has both been authenticated as being a member of the company, and a superuser for the company.

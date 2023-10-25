@@ -133,16 +133,18 @@ global $company_id, $company_name, $company_description, $conn;
         if ($stmt->execute()) {
 
             echo '
-            <table class="table mt-3">
+            <table class="table table-hover table-bordered table-striped mt-3">
                 <thead>
                     <tr>
                         <th scope="col">First name</th>
                         <th scope="col">Last name</th>
                         <th scope="col">E-mail</th>
-                        <th scope="col"></th>
-                    <tr>
-                </thead>
-            ';
+                        <th scope="col"></th>';
+                        if($superuser) {
+                            echo '<th scope="col">Manage</th>';
+                        }
+            echo    '<tr>
+                </thead>';
 
             $result = $stmt->get_result();
             while ($row = $result->fetch_assoc()) {
@@ -151,14 +153,16 @@ global $company_id, $company_name, $company_description, $conn;
                 } else {
                     $isAdmin = "";
                 }
-                echo('
+                echo '
                 <tr>
                     <td>' . $row['first_name'] . '</td>
                     <td>' . $row['last_name'] . '</td>
                     <td><a href="mailto:' . $row['email'] . '">' . $row['email'] . '</a></td>
-                    <td>' . $isAdmin . '</td>
-                </r>
-                ');
+                    <td>' . $isAdmin . '</td>';
+                    if($superuser) {
+                        echo '<td><button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Make admin"><i class="fa fa-arrow-circle-up"></i></button><button type="button" class="btn btn-danger"  data-bs-toggle="tooltip" data-bs-placement="top" title="Remove user from company"><i class="fa fa-times-circle"></i></button></td>';
+                    }
+        echo    '</tr>';
             }
         }
         echo '</table>';

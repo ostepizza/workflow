@@ -31,7 +31,7 @@ if (isset($_POST['submit'])) {
         // Check if company name is empty
         $feedbackForUser .= "You need to enter a company name.<br>";
         $allConditionsMet = false;
-    } else if (strlen($_POST['description']) > 100) {
+    } else if (strlen($_POST['name']) > 100) {
         $feedbackForUser .= "Your company name can not exceed 100 characters.<br>";
         $allConditionsMet = false;
     }

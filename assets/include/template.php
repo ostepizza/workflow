@@ -18,6 +18,7 @@ echo '
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="' . $relativePathToRoot . 'assets/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>' . $pageTitle . ' - Workflow</title>
 </head>
 <body>
@@ -105,6 +106,12 @@ echo '
         </footer>
     </div>
     <script src="' . $relativePathToRoot . 'assets/js/bootstrap.bundle.js"></script>
+    <script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll(\'[data-bs-toggle="tooltip"]\'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+    </script>
 </body>
 </html>'
 ;}                     
