@@ -95,8 +95,7 @@ if (isset($_POST['submit'])) {
                         // the company is now properly stored in the database, with correct
                         // references to their proper foreign keys
                         $stmt->close();
-                        $feedbackForUser = "Company has been successfully registered.<br>";
-                        $feedbackColor = "success";
+                        header('Location: index.php?registerSuccess');
                     } else {
                         $feedbackForUser = "An error occurred while creating a company.<br>";
                     }

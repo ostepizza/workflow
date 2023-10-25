@@ -28,6 +28,20 @@ if ($stmt->execute()) {
     $stmt->close();
 }
 
+if(!empty($_GET)){
+    $getMsg = NULL;
+    $getMsgColor = NULL;
+    if(isset($_GET['deletedCompany'])) {
+        $getMsg = 'Company has been deleted.';
+        $getMsgColor = 'danger';
+    } else if (isset($_GET['registerSuccess'])) {
+        $getMsg = 'Company successfully registered.';
+        $getMsgColor = 'success';
+    }
+    echo('<div class="alert alert-' . $getMsgColor . ' mt-3" role="alert">' . $getMsg . '</div>');  
+}
+
+
 if ($memberOfCompany){
     // If member is in a company, retrieve company data
     $sql = 'SELECT `name`, `description` FROM `company` WHERE `id` = ?';
@@ -44,8 +58,6 @@ if ($memberOfCompany){
         }
         $stmt->close();
     }
-
-
     // Display the company dashboard:
     echo '
     <div class="row mt-5">
