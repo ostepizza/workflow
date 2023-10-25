@@ -88,7 +88,7 @@ if (isset($_POST['submit'])) {
                     // With the below SQL statement the user registering the company becomes a part of it automatically, with elevated privileges
                     $sql = 'INSERT INTO `company_management` (`user_id`, `company_id`, `superuser`) VALUES (?, ?, 1)';
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param('ss', $user_id, $company_id);
+                    $stmt->bind_param('ii', $user_id, $company_id);
 
                     if ($stmt->execute()) {
                         // If all of these SQL statements have been executed successfully,
@@ -114,6 +114,7 @@ function display() {
 <!-- Content here -->
 <div class="row mt-5">
     <div class="col-md-12">
+        <a href="index.php"><button type="button" class="btn btn-secondary mb-3">&lt; Return to dashboard</button></a>
         <h1>New company</h1>
         <form action="" method="post">
             <div class="form-group">

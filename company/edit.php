@@ -37,6 +37,7 @@ if ($stmt->execute()) {
                     $feedbackForUser = "An error occurred while retrieving company data.<br>";
                 }
             }
+            $stmt->close();
         } else {
             //Redirect if user is not a superuser
             header('Location: ../403.php');
@@ -130,6 +131,7 @@ global $company_name, $company_description;
 ?>
 <!-- Content here -->
 <div class="row mt-5">
+    <a href="index.php"><button type="button" class="btn btn-secondary mb-3">&lt; Return to dashboard</button></a>
     <div class="col-md-12">
         <h1>Edit company <a href="#" data-bs-toggle="modal" data-bs-target=".modalDeleteCompany"><button type="button" class="btn btn-danger">Delete company</button></a></h1>
         <form action="" method="post">
