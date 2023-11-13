@@ -3,74 +3,28 @@
 include("../assets/include/connection.php");
 $conn = createDBConnection(); //Connects to the database
 
+include_once '../assets/include/validation.php';
+$validator = new Validator();
+
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
 if (isset($_POST['submit'])) {
-    $allConditionsMet = true; //Sets up a fail condition if user-input is bad
-
-    if (!isset($_POST['acceptToS'])) {
-        $feedbackForUser .= "You need to accept the terms & conditions.<br>";
-        $allConditionsMet = false;
-    }
-
-    if (!empty($_POST['email'])) {
-        if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-            $feedbackForUser .= $_POST['email'] . ' is not a valid email.<br>';
-            $allConditionsMet = false;
-        }
-    } else {
-        $feedbackForUser .= "You need to enter an email.<br>";
-        $allConditionsMet = false;
-    }
-
-    if (!empty($_POST['password'])) {
-        if(!preg_match('@[0-9]@', $_POST['password'])) {
-            $feedbackForUser .= "Password does not contain a number.<br>";
-            $allConditionsMet = false;
-        }
-        if (!preg_match('@[^\w]@', $_POST['password'])) {
-            $feedbackForUser .= "Password does not contain a special character.<br>";
-            $allConditionsMet = false;
-        }
-        if (strlen($_POST['password']) < 8) {
-            $feedbackForUser .= "Password is not at least 8 characters long.<br>";
-            $allConditionsMet = false;
-        }
-    } else {
-        $feedbackForUser .= "You need to enter a password.<br>";
-        $allConditionsMet = false;
-    }
+    // Give ToS-checkmark a value even if user hasn't specified. Else the post-value is missing and validation won't work
+    $tos = (isset($_POST['acceptToS'])) ? $_POST['acceptToS'] : false;
     
-    if (!empty($_POST['firstName'])) {
-        if (!preg_match("/^[a-zA-Z-' ]*$/",$_POST['firstName'])) {
-            $feedbackForUser .= 'Only letters and white space allowed in first name "' . $_POST['firstName'] . '".<br>';
-            $allConditionsMet = false;
-        }
-    } else {
-        $feedbackForUser .= "You need to enter a first name.<br>";
-        $allConditionsMet = false;
-    }
+    // Pass all form elements to the Validator
+    $validator->validateRegistration($tos, $_POST['email'], $_POST['password'], $_POST['firstName'], $_POST['lastName']);
 
-    if (!empty($_POST['lastName'])) {
-        if (!preg_match("/^[a-zA-Z-' ]*$/",$_POST['lastName'])) {
-            $feedbackForUser .= 'Only letters and white space allowed in last name "' . $_POST['lastName'] . '".<br>';
-            $allConditionsMet = false;
-        }
-    } else {
-        $feedbackForUser .= "You need to enter a last name.<br>";
-        $allConditionsMet = false;
-    }
+    if ($validator->valid) {
+        // Convert the posted email to lowercase, for consistency
+        $email = strtolower($_POST['email']);
 
-    if ($allConditionsMet) {
         /*
             If all form conditions are met, then a SQL statement is prepared.
             This SQL statement checks whether the email is already in the database or not.
             If it returns more than 0 rows, then it exists, and an error is displayed to the user.
         */
-        $email = $_POST['email'];
-        $email = strtolower($email);
-
         $sql = 'SELECT count(*) FROM `user` WHERE `email` = ?';
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $email);
@@ -80,7 +34,7 @@ if (isset($_POST['submit'])) {
         $stmt->close();
 
         if ($count > 0) {
-            $feedbackForUser .= 'Email ' . $email . ' already belongs to a user.<br>';
+            $feedbackForUser = 'Email ' . $email . ' already belongs to a user.<br>';
         } else {
             /*
                 If the email is not present in the database, the registration continues.
@@ -111,6 +65,9 @@ if (isset($_POST['submit'])) {
                 $feedbackForUser = "An error occurred while registering.<br>";
             }
         }
+    } else {
+        // If the form validation failed, tell the user what went wrong.
+        $feedbackForUser = $validator->printAllFeedback();
     }
 }
 

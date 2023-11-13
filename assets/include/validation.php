@@ -1,10 +1,17 @@
 <?php
 class Validator {
     public $feedback = array();
-    public $valid = false;
+    public $valid = true;
 
     function __construct(){
 
+    }
+
+    function printAllFeedback() {
+        /*foreach ($this->feedback as $fb) {
+            echo $fb;
+        }*/
+        return implode($this->feedback);
     }
 
     function validateRegistration($tosCheckmark, $email, $password, $firstName, $lastName) {
@@ -19,9 +26,7 @@ class Validator {
         if (!$tosCheckmark) {
             array_push($this->feedback, 'You need to accept the terms & conditions.<br>');
             $this->valid = false;
-            return;
         }
-        $this->valid = true;
     }
 
     function validateEmail($email) {
@@ -36,7 +41,6 @@ class Validator {
             $this->valid = false;
             return;
         }
-        $this->valid = true;
     }
 
     function validatePassword($password) {
@@ -61,7 +65,6 @@ class Validator {
             $this->valid = false;
             return;
         }
-        $this->valid = true;
     }
 
     function validateName($name, $nameType) {
@@ -76,7 +79,6 @@ class Validator {
             $this->valid = false;
             return;
         }
-        $this->valid = true;
     }
 
     function validateFirstName($firstName) {
