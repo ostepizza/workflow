@@ -1,9 +1,11 @@
 <?php include_once '../assets/include/template.php';
 
-include("../assets/include/connection.php");
-$conn = createDBConnection(); //Connects to the database
+//include("../assets/include/connection.php");
+//$conn = createDBConnection(); //Connects to the database
+include_once '../assets/include/DBHandler.php';
+$dbh = new DBHandler();
 
-include_once '../assets/include/validation.php';
+include_once '../assets/include/Validator.php';
 $validator = new Validator();
 
 $feedbackForUser = NULL;
@@ -17,54 +19,21 @@ if (isset($_POST['submit'])) {
     $validator->validateRegistration($tos, $_POST['email'], $_POST['password'], $_POST['firstName'], $_POST['lastName']);
 
     if ($validator->valid) {
-        // Convert the posted email to lowercase, for consistency
-        $email = strtolower($_POST['email']);
 
-        /*
-            If all form conditions are met, then a SQL statement is prepared.
-            This SQL statement checks whether the email is already in the database or not.
-            If it returns more than 0 rows, then it exists, and an error is displayed to the user.
-        */
-        $sql = 'SELECT count(*) FROM `user` WHERE `email` = ?';
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('s', $email);
-        $stmt->execute();
-        $stmt->bind_result($count);
-        $stmt->fetch();
-        $stmt->close();
-
-        if ($count > 0) {
-            $feedbackForUser = 'Email ' . $email . ' already belongs to a user.<br>';
-        } else {
-            /*
-                If the email is not present in the database, the registration continues.
-                It first hashes a password to more safely store the password in case of a data breach.
-                It then converts the first and last names to start with a large letter, followed by small letters.
-                It then prepares and executes a SQL statement to put the user info into the user-table.
-            */
-            $hashed_password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-
-            $firstname = $_POST['firstName'];
-            $firstname = strtolower($firstname);
-            $firstname = ucwords($firstname);
-
-            $lastname = $_POST['lastName'];
-            $lastname = strtolower($lastname);
-            $lastname = ucwords($lastname);
-
-            $sql = 'INSERT INTO `user` (`email`, `password`, `first_name`, `last_name`) VALUES (?, ?, ?, ?)';
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param('ssss', $email, $hashed_password, $firstname, $lastname);
-
-            if ($stmt->execute()) {
-                $stmt->close();
+        // If all form inputs are valid, check if email is in the system
+        if(!$dbh->isEmailtaken($_POST['email'])){
+            
+            // If the email is not found in the database, proceed with registration
+            if($dbh->addUserToDB($_POST['email'], $_POST['password'], $_POST['firstName'], $_POST['lastName'])) {
                 $feedbackForUser = "User has been successfully registered. You may now log in.<br>";
                 $feedbackColor = "success";
             } else {
-                $stmt->close();
                 $feedbackForUser = "An error occurred while registering.<br>";
             }
-        }
+        } else {
+            // If email was found in database, display an error for the user
+            $feedbackForUser = 'Email ' . $_POST['email'] . ' already belongs to a user.<br>';
+        }   
     } else {
         // If the form validation failed, tell the user what went wrong.
         $feedbackForUser = $validator->printAllFeedback();

@@ -1,19 +1,21 @@
 <?php
 class Validator {
+    // Stores feedback used in the feedback-squares on pages with forms
     public $feedback = array();
+
+    // Flag for checking whether the input provided is valid
     public $valid = true;
 
     function __construct(){
 
     }
 
+    // Returns all feedback as a string
     function printAllFeedback() {
-        /*foreach ($this->feedback as $fb) {
-            echo $fb;
-        }*/
         return implode($this->feedback);
     }
 
+    // Used to validate all form inputs on the registration page
     function validateRegistration($tosCheckmark, $email, $password, $firstName, $lastName) {
         $this->validateTosCheckmark($tosCheckmark);
         $this->validateEmail($email);
@@ -22,6 +24,7 @@ class Validator {
         $this->validateLastName($lastName);
     }
 
+    // Used to validate the tos checkmark (can probably be changed to work with any checkmark)
     function validateTosCheckmark($tosCheckmark) {
         if (!$tosCheckmark) {
             array_push($this->feedback, 'You need to accept the terms & conditions.<br>');
@@ -29,6 +32,7 @@ class Validator {
         }
     }
 
+    // Validates email input, sets $valid to false if conditions aren't met
     function validateEmail($email) {
         if (!empty($email)) {
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -43,6 +47,7 @@ class Validator {
         }
     }
 
+    // Validates password input, sets $valid to false if all conditions aren't met
     function validatePassword($password) {
         if (!empty($password)) {
             if(!preg_match('@[0-9]@', $password)) {
@@ -67,6 +72,7 @@ class Validator {
         }
     }
 
+    // Validates names, sets $valid to false if conditions aren't met. $name is the name checked, $nameType is the type of name (eg. first or last)
     function validateName($name, $nameType) {
         if (!empty($name)) {
             if (!preg_match("/^[a-zA-Z-' ]*$/", $name)) {
@@ -81,10 +87,12 @@ class Validator {
         }
     }
 
+    // Validates first-name input, sets $valid to false if conditions aren't met
     function validateFirstName($firstName) {
         $this->validateName($firstName, 'first');
     }
 
+    // Validates last-name input, sets $valid to false if conditions aren't met
     function validateLastName($lastName) {
         $this->validateName($lastName, 'last');
     }

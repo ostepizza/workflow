@@ -1,5 +1,5 @@
 <?php
-include_once 'validation.php';
+include_once 'Validator.php';
 
 $validator = new Validator();
 
