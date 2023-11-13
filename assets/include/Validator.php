@@ -19,9 +19,15 @@ class Validator {
     function validateRegistration($tosCheckmark, $email, $password, $firstName, $lastName) {
         $this->validateTosCheckmark($tosCheckmark);
         $this->validateEmail($email);
-        $this->validatePassword($password);
+        $this->validatePasswordRegister($password);
         $this->validateFirstName($firstName);
         $this->validateLastName($lastName);
+    }
+
+    // Used to validate login-form inputs
+    function validateLogin($email, $password) {
+        $this->validateEmail($email);
+        $this->validatePasswordLogin($password);
     }
 
     // Used to validate the tos checkmark (can probably be changed to work with any checkmark)
@@ -47,8 +53,17 @@ class Validator {
         }
     }
 
-    // Validates password input, sets $valid to false if all conditions aren't met
-    function validatePassword($password) {
+    // Validates password input for login password, sets $valid to false if empty
+    function validatePasswordLogin($password) {
+        if (empty($password)) {
+            array_push($this->feedback, 'You need to enter a password.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
+    // Validates password input for registering/changing user password, sets $valid to false if all conditions aren't met
+    function validatePasswordRegister($password) {
         if (!empty($password)) {
             if(!preg_match('@[0-9]@', $password)) {
                 array_push($this->feedback, 'Password does not contain a number.<br>');

@@ -1,10 +1,10 @@
 <?php include_once '../assets/include/template.php';
 
-//include("../assets/include/connection.php");
-//$conn = createDBConnection(); //Connects to the database
+// Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
 $dbh = new DBHandler();
 
+// Include form input validator
 include_once '../assets/include/Validator.php';
 $validator = new Validator();
 
@@ -22,7 +22,7 @@ if (isset($_POST['submit'])) {
 
         // If all form inputs are valid, check if email is in the system
         if(!$dbh->isEmailtaken($_POST['email'])){
-            
+
             // If the email is not found in the database, proceed with registration
             if($dbh->addUserToDB($_POST['email'], $_POST['password'], $_POST['firstName'], $_POST['lastName'])) {
                 $feedbackForUser = "User has been successfully registered. You may now log in.<br>";
