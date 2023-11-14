@@ -1,8 +1,8 @@
 <?php
 include("connection.php");
 
-class DBHandler {
-    private $conn; //DB connection
+class DBHandlerBase {
+    protected $conn; //DB connection
 
     // Create a connection as the object is created
     function __construct() {
@@ -10,7 +10,7 @@ class DBHandler {
     }
 
     // Creates a connection to the Database
-    private function createDBConnection() {
+    protected function createDBConnection() {
         $servername = "localhost";
         $username = "root";
         $password = "";
@@ -27,7 +27,9 @@ class DBHandler {
         mysqli_set_charset($conn, "utf8");
         return $conn;
     }
+}
 
+class DBHandlerUser extends DBHandlerBase {
     // Checks if an email is already present in the db. Returns true if it finds an email, and returns false if email is available.
     function isEmailTaken($email) {
         // Make sure the email is always lowercase, for consistency
@@ -101,10 +103,8 @@ class DBHandler {
     // Used to log in and store session data. Checks if email exists, then compares passwords. If successful it returns nothing, but if somethings wrong it returns false.
     function logInUser($email, $plainPassword) {
         // Since selectUserByEmail either returns false or an array, we can first make sure that it doesn't return false:
-        if ($this->selectUserByEmail($email) != false) {
-            // If it doesn't return false, select again. This time we know for sure we get an array in return.
-            $user_details = $this->selectUserByEmail($email);
-
+        if ($user_details = $this->selectUserByEmail($email)) {
+            // If selectUserByEmail returns anything, we have $user_details
             // Use the hashed password in the array to compare with supplied password
             if ($this->verifyPassword($plainPassword, $user_details[1])) {
                 // If all is successful, take data from the $user_details array and put it in session
@@ -149,6 +149,76 @@ class DBHandler {
             $stmt->close();
             return false;
         }
+    }
+}
+
+class DBHandlerCompany extends DBHandlerBase {
+    /*
+        Function to retrieve a company id from a user id.
+        Can be used to just check if a user is a part of any company as well.
+        Returns the companyid if found,
+        else it returns false.
+    */
+    function getCompanyIdFromUserId($userid) {
+        // Ask database if logged in member is found in the company_management table
+        $sql = 'SELECT `company_id` FROM `company_management` WHERE `user_id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userid);
+        if ($stmt->execute()) {
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                // If any rows are found, the user is a part of a company. Return the company id
+                $memberOfCompany = true;
+                $stmt->bind_result($companyid);
+                $stmt->fetch();
+                return $companyid;
+            } else {
+                $stmt->close();
+                return false;
+            }
+        } else {
+            // Return false just in case SQL statement didn't execute properly
+            return false;
+        }
+    }
+
+    /*
+        Function to retrieve company name and description from a company id.
+        Can be used to just check if a company with id n exists as well.
+        Returns an array with the company name and description if found,
+        else it returns false.
+    */
+    function getCompanyDetailsFromCompanyId($companyId) {
+        $sql = 'SELECT `name`, `description` FROM `company` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+        if ($stmt->execute()) {
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                
+                // Retrieve the company name and description from database
+                $stmt->bind_result($companyName, $companyDescription);
+                $stmt->fetch();
+                $stmt->close();
+
+                // If the company has no description (NULL or blank), return a placeholder description:
+                if ($companyDescription == NULL && $companyDescription == '') {
+                    $companyDescription = 'This company has no description.';
+                }
+
+                // Return an array with the company name and description
+                return array($companyName, $companyDescription);
+            } else {
+                // If for some reason this has been called with a wrong company id, return false
+                $stmt->close();
+                return false;
+            }
+        }
+        // Return false just in case SQL statement didn't execute properly
+        $stmt->close();
+        return false;
     }
 }
 ?>

@@ -2,7 +2,7 @@
 
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
-$dbh = new DBHandler();
+$dbh = new DBHandlerUser();
 
 // Include form input validator
 include_once '../assets/include/Validator.php';

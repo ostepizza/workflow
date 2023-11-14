@@ -2,7 +2,7 @@
 
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
-$dbh = new DBHandler();
+$dbh = new DBHandlerUser();
 
 // Include form input validator
 include_once '../assets/include/Validator.php';
@@ -26,7 +26,6 @@ if (isset($_POST['submit'])) {
             // User has input a non-existent email, wrong email and/or password. Tell them.
             $feedbackForUser = 'Wrong email and/or password.<br>';
         }
-        // if ($dbh->loginUser == false) {handle error} else set ID in session
     } else {
         // If the form validation failed, tell the user what went wrong.
         $feedbackForUser = $validator->printAllFeedback();
