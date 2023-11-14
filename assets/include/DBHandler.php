@@ -91,6 +91,71 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
+    function selectAllUserInfoByUserId($userId) {
+        $sql = 'SELECT `email`, `password`, `first_name`, `last_name`, `telephone`, `location`, `birthday`, `picture`, `cv`, `searchable`, `competence` FROM `user` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userId);
+
+        // Do a quick if, just in case something fails while executing the statement
+        if ($stmt->execute()) {
+            $stmt->store_result();
+    
+            if ($stmt->num_rows == 1) {
+                // If one row is found, everything issa okay. Store the various data in variables.
+                $stmt->bind_result($email, $hashedPassword, $firstName, $lastName, $telephone, $location, $birthday, $picture, $cv, $searchable, $competence);
+                $stmt->fetch();
+                $stmt->close();
+
+                // Return an array with some user data. user_id is typically used for all session management.
+                return array(
+                    'email' => $email,
+                    'hashedPassword' => $hashedPassword,
+                    'firstName' => $firstName,
+                    'lastName' => $lastName, 
+                    'telephone' => $telephone,
+                    'location' => $location,
+                    'birthday' => $birthday,
+                    'picture' => $picture,
+                    'cv' => $cv,
+                    'searchable' => $searchable,
+                    'competence' => $competence
+                );
+            } else {
+                // Return false if not found 1 row exactly. 0 rows = email not tied to account. More than 1 row = something's very wrong in the DB.
+                $stmt->close();
+                return false;
+            }
+        } else {
+            // Return if statement didn't execute.
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Retrieves a users hashed password from the database
+    function getUserPasswordByUserId($userId) {
+        $sql = 'SELECT `password` FROM `user` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userId);
+        if ($stmt->execute()) {
+            $stmt->store_result();
+            if ($stmt->num_rows == 1) {
+                //User found
+                $stmt->bind_result($hashedPassword);
+                $stmt->fetch();
+                return $hashedPassword;
+            } else {
+                //Return false if no user found
+                $stmt->close();
+                return false;
+            }
+        } else {
+            // Return false if statement didn't execute.
+            $stmt->close();
+            return false;
+        }
+    }
+
     // Compares a plain-text password with a hashed password using the PHP function password_verify(). Returns true if passwords are same.
     function verifyPassword($inputPassword, $hashedPassword) {
         if (password_verify($inputPassword, $hashedPassword)) {
@@ -150,6 +215,96 @@ class DBHandlerUser extends DBHandlerBase {
             return false;
         }
     }
+
+    // Update a field using a user id input, what field to update, and what to update it to
+    function updateDetail($userId, $field, $detail) {
+        //UPDATE `user` SET `'.$field.'` = ? WHERE `id` = ?;
+        // Prepare and execute sql statement to add user with supplied info
+        $sql = 'UPDATE `user` SET `' . $field . '` = ? WHERE `id` = ?;';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('si', $detail, $userId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Update email field of a user
+    function updateEmail($userId, $email) {
+        return $this->updateDetail($userId, 'email', $email);
+    }
+
+    // Update first_name field of a user
+    function updateFirstName($userId, $firstName) {
+        return $this->updateDetail($userId, 'first_name', $firstName);
+    }
+
+    // Update last_name field of a user
+    function updateLastName($userId, $lastName) {
+        return $this->updateDetail($userId, 'last_name', $lastName);
+    }
+
+    // Update telephone field of a user
+    function updateTelephone($userId, $telephone) {
+        return $this->updateDetail($userId, 'telephone', $telephone);
+    }
+
+    // Update location field of a user
+    function updateLocation($userId, $location) {
+        return $this->updateDetail($userId, 'location', $location);
+    }
+
+    //THIS METHOD IS UNTESTED, AS TYPE = DATE
+    function updateBirthday($userId, $birthday) {
+        return $this->updateDetail($userId, 'birthday', $birthday);
+    }
+
+    //THIS METHOD IS UNTESTED, AS TYPE = BLOB
+    function updatePicture($userId, $picture) {
+        return $this->updateDetail($userId, 'picture', $picture);
+    }
+
+    //THIS METHOD IS UNTESTED, AS TYPE = BLOB
+    function updateCV($userId, $cv) {
+        return $this->updateDetail($userId, 'cv', $cv);
+    }
+
+    // Update competence field of a user
+    function updateCompetence($userId, $competence) {
+        return $this->updateDetail($userId, 'competence', $competence);
+    }
+
+    function updatePassword($userId, $hashedPassword) {
+        // update a users password with a user id and prehashed password
+    }
+
+    // Toggles whether a user is set as searchable in the user table (sets searchable to 1 if it was 0, 0 if it was 1)
+    function toggleSearchable($userId) {
+        $sql = '
+            UPDATE `user`
+            SET searchable = CASE
+                WHEN searchable = 0 THEN 1
+                WHEN searchable = 1 THEN 0
+            END
+            WHERE `id` = ?;
+            ';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
 }
 
 class DBHandlerCompany extends DBHandlerBase {
@@ -167,9 +322,8 @@ class DBHandlerCompany extends DBHandlerBase {
         if ($stmt->execute()) {
             $stmt->store_result();
 
-            if ($stmt->num_rows > 0) {
+            if ($stmt->num_rows == 1) {
                 // If any rows are found, the user is a part of a company. Return the company id
-                $memberOfCompany = true;
                 $stmt->bind_result($companyid);
                 $stmt->fetch();
                 return $companyid;
@@ -179,6 +333,35 @@ class DBHandlerCompany extends DBHandlerBase {
             }
         } else {
             // Return false just in case SQL statement didn't execute properly
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function isUserCompanySuperuser($userId) {
+
+        $sql = 'SELECT `superuser` FROM `company_management` WHERE `user_id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userId);
+        if ($stmt->execute()) {
+            $stmt->store_result();
+            
+            if ($stmt->num_rows == 1) {
+                // If one row is found, the user is a part of a company
+                $stmt->bind_result($superuser);
+                $stmt->fetch();
+                $stmt->close();
+
+                // Return $superuser directly, as it's either 1 or 0, aka true or false
+                return $superuser;
+            } else {
+                $stmt->close();
+                return false;
+            }
+            
+        } else {
+            // Return false just in case SQL statement didn't execute properly
+            $stmt->close();
             return false;
         }
     }
@@ -219,6 +402,46 @@ class DBHandlerCompany extends DBHandlerBase {
         // Return false just in case SQL statement didn't execute properly
         $stmt->close();
         return false;
+    }
+
+    // Returns an array with company name and description if user is a part of a company. Else, returns false.
+    function getCompanyDetailsFromUserId($userId) {
+        $companyId = $this->getCompanyIdFromUserId($userId);
+        return $companyDetails = $this->getCompanyDetailsFromCompanyId($companyId);
+    }
+
+    function updateCompanyDetailWithCompanyId($companyId, $detail, $updatedDetail) {
+        $sql = 'UPDATE `company` SET `' . $detail . '` = ? WHERE `company`.`id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('si', $updatedDetail, $companyId);
+        if ($stmt->execute()) {
+            // If the statement executes no problem, the detail should be updated
+            $stmt->close();
+            return true;
+        } else {
+            // Return false just in case SQL statement didn't execute properly
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function updateCompanyNameWithCompanyId($companyId, $newCompanyName) {
+        return $this->updateCompanyDetailWithCompanyId($companyId, 'name', $newCompanyName);
+    }
+
+    function updateCompanyDescriptionWithCompanyId($companyId, $newCompanyDescription) {
+        return $this->updateCompanyDetailWithCompanyId($companyId, 'description', $newCompanyDescription);
+    }
+
+    function deleteCompanyById($companyId) {
+        $sql = 'DELETE FROM `company` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 ?>

@@ -5,6 +5,7 @@ function display() {
 <!-- Content here -->
 <!-- If not a part of a company -->
 <?php
+
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
 $dbhc = new DBHandlerCompany();

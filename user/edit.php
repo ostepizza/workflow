@@ -1,10 +1,12 @@
 <?php include_once '../assets/include/template.php';
 
-include("../assets/include/connection.php");
+// Include and establish connection with DB
+include_once '../assets/include/DBHandler.php';
+$dbh = new DBHandlerUser();
+
+// $dbh->updateFirstName($_SESSION['user_id'], 'Jeff'); <-- Method to update user fields. One method per field, more details in dbhandler file
 
 function display() {
-
-$conn = createDBConnection(); //Connects to the database
 ?>
 <!-- Content here -->
 <div class="row mt-5">

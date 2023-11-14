@@ -10,6 +10,10 @@ class Validator {
 
     }
 
+    function validatorReset() {
+        $this->valid = true;
+    }
+
     // Returns all feedback as a string
     function printAllFeedback() {
         return implode($this->feedback);
@@ -110,6 +114,41 @@ class Validator {
     // Validates last-name input, sets $valid to false if conditions aren't met
     function validateLastName($lastName) {
         $this->validateName($lastName, 'last');
+    }
+
+    // Validates a company name, and sets valid to false if conditions aren't met
+    function validateCompanyName($name) {
+        if (!empty($name)) {
+            if(strlen($name) <= 100) {
+                // This can be extended to further change the criteria for name validation
+                return;
+            } else {
+                array_push($this->feedback, 'Company name can not be over 100 characters.<br>');
+                $this->valid = false;
+                return;
+            }
+        } else {
+            array_push($this->feedback, 'Company name can not be empty.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
+    function validateCompanyDescription($description) {
+        if (!empty($description)) {
+            if(strlen($description) <= 500) {
+                // This can be extended to further change the criteria for name validation
+                return;
+            } else {
+                array_push($this->feedback, 'Company description can not be over 500 characters.<br>');
+                $this->valid = false;
+                return;
+            }
+        } else {
+            array_push($this->feedback, 'Company description can not be empty.<br>');
+            $this->valid = false;
+            return;
+        }
     }
 }
 ?>
