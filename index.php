@@ -22,6 +22,8 @@ if(isset($_GET['loggedout'])) {
     <div class="col-md-7">
         <h1>Welcome to Workflow!</h1>
         <p>We currently have X job listings from X companies in our system, and X applications sent to employers!</p>
+        <br>
+        <p>Some personal stats if logged in</p>
     </div>
     
     <div class="col-md-2">
@@ -37,6 +39,9 @@ if(isset($_GET['loggedout'])) {
             </div>
         </div>
 
+        <?php
+        if(isset($_SESSION['userid'])) {
+            echo('
         <div class="card mt-3">
             <div class="card-body">
                 <h5 class="card-title">Become discoverable to employers</h5>
@@ -51,7 +56,9 @@ if(isset($_GET['loggedout'])) {
                 <p class="card-text">Go to the company dashboard to create a job listing, or use the link at the bottom of the page.</p>
                 <a href="company/index.php" class="btn btn-primary">Company dashboard</a>
             </div>
-        </div>
+        </div>');
+        }
+        ?>
     </div>
 </div>
 <!-- Content here -->
