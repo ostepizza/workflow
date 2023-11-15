@@ -25,6 +25,9 @@ if (isset($_GET['updatedProfile'])) {
 
 // If the user has requested to update their profile information
 if (isset($_POST['submitProfile'])) {
+    // Set color to danger in case the user has just updated something already
+    $feedbackColor = 'danger';
+
     // Check if all the individual fields are valid
     $validator->validateEmail($_POST['email']);
     $validator->validateFirstName($_POST['firstName']);
@@ -34,16 +37,24 @@ if (isset($_POST['submitProfile'])) {
     $validator->validateBirthday($_POST['birthday']);
 
     if($validator->valid) {
-        // If all the fields are valid, update the fields in the database
-        $dbhu->updateEmail($_SESSION['user_id'], $_POST['email']);
-        $dbhu->updateFirstName($_SESSION['user_id'], $_POST['firstName']);
-        $dbhu->updateLastName($_SESSION['user_id'], $_POST['lastName']);
-        $dbhu->updateLocation($_SESSION['user_id'], $_POST['location']);
-        $dbhu->updateTelephone($_SESSION['user_id'], $_POST['telephone']);
-        $dbhu->updateBirthday($_SESSION['user_id'], $_POST['birthday']);
+        // If all the fields are valid, check if the email is taken        
 
-        // Refresh the page with a get message to show positive user feedback
-        header('Location: edit.php?updatedProfile');
+        if(!$dbhu->isEmailTakenExceptByUser($_POST['email'], $_SESSION['user_id'])){
+
+            // If the email is not found in the database, proceed with registration
+            $dbhu->updateEmail($_SESSION['user_id'], $_POST['email']);
+            $dbhu->updateFirstName($_SESSION['user_id'], $_POST['firstName']);
+            $dbhu->updateLastName($_SESSION['user_id'], $_POST['lastName']);
+            $dbhu->updateLocation($_SESSION['user_id'], $_POST['location']);
+            $dbhu->updateTelephone($_SESSION['user_id'], $_POST['telephone']);
+            $dbhu->updateBirthday($_SESSION['user_id'], $_POST['birthday']);
+
+            // Refresh the page with a get message to show positive user feedback
+            header('Location: edit.php?updatedProfile');
+        } else {
+            // If email was found in database, display an error for the user
+            $feedbackForUser = 'Email ' . $_POST['email'] . ' already belongs to a user.<br>';
+        } 
     } else {
         // If the form validation failed, tell the user what went wrong.
         $feedbackForUser = $validator->printAllFeedback();
@@ -52,6 +63,9 @@ if (isset($_POST['submitProfile'])) {
 
 // If the user has requested to update their password
 if (isset($_POST['submitPassword'])) {
+    // Set color to danger in case the user has just updated something already
+    $feedbackColor = 'danger';
+    
     // Check if current password is correct, if new and confirm password is the same, and if new password follows the password rules
     $validator->validatePasswordNew($_POST['currentPassword'], $_POST['newPassword'], $_POST['confirmNewPassword'], $userInfo['hashedPassword']);
 
@@ -81,19 +95,19 @@ global $userInfo;
             
                 <div class="col-md-6">
                     <div class="form-group mb-3">
-                        <label for="email">Email address</label>
+                        <label for="email">Email address <span class="text-danger">*</span></label>
                         <input type="text" id="email" name="email" class="form-control" placeholder="Enter your email" <?php if(!empty($userInfo['email'])) { echo 'value="' . $userInfo['email'] . '"';} ?>>
                         <small class="form-text text-muted">Changing this will change the way you log in</small>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label for="firstName">First name</label>
+                        <label for="firstName">First name <span class="text-danger">*</span></label>
                         <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter your first name" <?php if(!empty($userInfo['firstName'])) { echo 'value="' . $userInfo['firstName'] . '"';} ?>>
                         <small class="form-text text-muted">Your first name(s)</small>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label for="lastName">Last name</label>
+                        <label for="lastName">Last name <span class="text-danger">*</span></label>
                         <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter your last name" <?php if(!empty($userInfo['lastName'])) { echo 'value="' . $userInfo['lastName'] . '"';} ?>>
                         <small class="form-text text-muted">Your last name(s)</small>
                     </div>

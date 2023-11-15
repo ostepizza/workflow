@@ -57,6 +57,28 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
+    function isEmailTakenExceptByUser($email, $userid) {
+        // Make sure the email is always lowercase, for consistency
+        $email = strtolower($email);
+
+        // Select userdata with the email supplied. If it executes, the email is found in the DB.
+        $sql = 'SELECT `email` FROM `user` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userid);
+        $stmt->execute();
+        $stmt->bind_result($emailInDB);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($email == $emailInDB) {
+            // Return false since email is users
+            return false;
+        } else {
+            // If the email provided isn't the users in the database, check if it's taken
+            return $this->isEmailTaken($email);
+        }
+    }
+
     // Select userdata from DB from an email. Returns an array with the userdata if successful, else returns false.
     function selectUserByEmail($email) {
         // Make sure the email is always lowercase, for consistency
