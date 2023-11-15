@@ -116,6 +116,35 @@ class Validator {
         $this->validateName($lastName, 'last');
     }
 
+    // Validates phone number input, sets $valid to false if conditions aren't met
+    function validateTelephone($phoneNumber) {
+        if (!preg_match("/^\+?\d*$/", $phoneNumber)) {
+            array_push($this->feedback, 'Phone number can only consist of numbers and a preceeding +.<br>');
+            $this->valid = false;
+            return;
+        } else if (strlen($phoneNumber) > 25) {
+            array_push($this->feedback, 'Phone number can not exceed 25 characters.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
+    function validateGenericField($field, $fieldName, $maxLength) {
+        if (strlen($field) > $maxLength) {
+            array_push($this->feedback, $fieldName . ' can not exceed ' . $maxLength . ' characters.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
+    function validateLocation($location) {
+        $this->validateGenericField($location, 'Location', 40);
+    }
+
+    function validateCompetence($competence) {
+        $this->validateGenericField($competence, 'Competence', 5000);
+    }
+
     // Validates a company name, and sets valid to false if conditions aren't met
     function validateCompanyName($name) {
         if (!empty($name)) {

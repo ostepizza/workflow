@@ -44,14 +44,15 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         if ($userInfo['picture']) {
             $base64Image = base64_encode($userInfo['picture']);
             $pictureData = "data:image/jpeg;base64," . $base64Image;
-            echo '<img src="' . $pictureData . '" alt="Your profile picture" class="img-fluid img-thumbnail">';
+            echo '<img src="' . $pictureData . '" alt="Your profile picture" class="img-fluid rounded">';
         } else {
-            echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid img-thumbnail">';
+            echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded">';
         }
         ?>
         <a href="edit.php" class="btn btn-primary active mt-3" role="button">Edit profile</a><br>
         <?php
         if($userInfo['cv'] != NULL) {
+            // Button is currently non functional
             echo '<a href="#" class="btn btn-primary active mt-3" role="button">Open resume</a>';
         }
         ?>
@@ -97,12 +98,6 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         a table
     </div>
 </div>
-<script>
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const checkbox = document.getElementById('searchableSwitch');
