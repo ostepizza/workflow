@@ -11,6 +11,9 @@ $validator = new Validator();
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
+// Retrieve all user info
+$userInfo = $dbhu->selectAllUserInfoByUserId($_SESSION['user_id']);
+
 // Some get messages to show user feedback after profile updates
 if (isset($_GET['updatedProfile'])) {
     $feedbackForUser = 'Your profile has been updated.';
