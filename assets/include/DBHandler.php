@@ -256,11 +256,17 @@ class DBHandlerUser extends DBHandlerBase {
 
     // Update location field of a user
     function updateLocation($userId, $location) {
+        if ($location == '') {
+            $location = NULL;
+        }
         return $this->updateDetail($userId, 'location', $location);
     }
 
     //THIS METHOD IS UNTESTED, AS TYPE = DATE
     function updateBirthday($userId, $birthday) {
+        if ($birthday == '') {
+            $birthday = NULL;
+        }
         return $this->updateDetail($userId, 'birthday', $birthday);
     }
 
@@ -279,8 +285,9 @@ class DBHandlerUser extends DBHandlerBase {
         return $this->updateDetail($userId, 'competence', $competence);
     }
 
-    function updatePassword($userId, $hashedPassword) {
-        // update a users password with a user id and prehashed password
+    function updatePassword($userId, $plainPassword) {
+        $hashedPassword = password_hash($plainPassword, PASSWORD_DEFAULT);
+        return $this->updateDetail($userId, 'password', $hashedPassword);
     }
 
     // Toggles whether a user is set as searchable in the user table (sets searchable to 1 if it was 0, 0 if it was 1)

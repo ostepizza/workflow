@@ -11,20 +11,16 @@ $validator = new Validator();
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
-// For debugging, remove before final merge
-if($userInfo = $dbhu->selectAllUserInfoByUserId($_SESSION['user_id'])) {
-    print_r($userInfo);
-}
-
 // Some get messages to show user feedback after profile updates
 if (isset($_GET['updatedProfile'])) {
     $feedbackForUser = 'Your profile has been updated.';
     $feedbackColor = 'success';
 } else if (isset($_GET['updatedPassword'])) {
-    $feedbackForUser = 'Your password has been updated.';
+    $feedbackForUser = 'Your password has been changed.';
     $feedbackColor = 'success';
 }
 
+// If the user has requested to update their profile information
 if (isset($_POST['submitProfile'])) {
     // Check if all the individual fields are valid
     $validator->validateEmail($_POST['email']);
@@ -32,6 +28,7 @@ if (isset($_POST['submitProfile'])) {
     $validator->validateLastName($_POST['lastName']);
     $validator->validateLocation($_POST['location']);
     $validator->validateTelephone($_POST['telephone']);
+    $validator->validateBirthday($_POST['birthday']);
 
     if($validator->valid) {
         // If all the fields are valid, update the fields in the database
@@ -40,9 +37,27 @@ if (isset($_POST['submitProfile'])) {
         $dbhu->updateLastName($_SESSION['user_id'], $_POST['lastName']);
         $dbhu->updateLocation($_SESSION['user_id'], $_POST['location']);
         $dbhu->updateTelephone($_SESSION['user_id'], $_POST['telephone']);
+        $dbhu->updateBirthday($_SESSION['user_id'], $_POST['birthday']);
 
         // Refresh the page with a get message to show positive user feedback
         header('Location: edit.php?updatedProfile');
+    } else {
+        // If the form validation failed, tell the user what went wrong.
+        $feedbackForUser = $validator->printAllFeedback();
+    }
+}
+
+// If the user has requested to update their password
+if (isset($_POST['submitPassword'])) {
+    // Check if current password is correct, if new and confirm password is the same, and if new password follows the password rules
+    $validator->validatePasswordNew($_POST['currentPassword'], $_POST['newPassword'], $_POST['confirmNewPassword'], $userInfo['hashedPassword']);
+
+    if($validator->valid) {
+        // If all fields are valid, update the password in the database
+        $dbhu->updatePassword($_SESSION['user_id'], $_POST['newPassword']);
+
+        // Refresh the page with a get message to show positive user feedback
+        header('Location: edit.php?updatedPassword');
     } else {
         // If the form validation failed, tell the user what went wrong.
         $feedbackForUser = $validator->printAllFeedback();
@@ -96,7 +111,7 @@ global $userInfo;
 
                     <div class="form-group mb-3">
                         <label for="birthday">Birthday</label><br>
-                        <input type="date" id="birthday" name="birthday" <?php if(!empty($userInfo['birthday'])){echo 'value="' . $userInfo['birthday'] . '"';}else{echo 'value="'.date('Y-m-d').'"';} ?>/><br>
+                        <input type="date" id="birthday" name="birthday" <?php if(!empty($userInfo['birthday'])){echo 'value="' . $userInfo['birthday'] . '"';} ?>/><br>
                         <small class="form-text text-muted">Your date of birth</small>
                     </div>
                 </div>

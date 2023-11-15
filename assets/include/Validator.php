@@ -91,6 +91,28 @@ class Validator {
         }
     }
 
+    function validatePasswordNew($currentPassword, $newPassword, $confirmNewPassword, $hashedPassword) {
+        if($newPassword == $confirmNewPassword) {
+            if(password_verify($currentPassword, $hashedPassword)) {
+                if($currentPassword != $newPassword) {
+                    $this->validatePasswordRegister($newPassword);
+                } else {
+                    array_push($this->feedback, 'Your new password can not be the same as your current password.<br>');
+                    $this->valid = false;
+                    return;
+                }
+            } else {
+                array_push($this->feedback, 'Your current password is incorrect.<br>');
+                $this->valid = false;
+                return;
+            }
+        } else {
+            array_push($this->feedback, 'New password and confirm password do not match.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
     // Validates names, sets $valid to false if conditions aren't met. $name is the name checked, $nameType is the type of name (eg. first or last)
     function validateName($name, $nameType) {
         if (!empty($name)) {
@@ -124,6 +146,20 @@ class Validator {
             return;
         } else if (strlen($phoneNumber) > 25) {
             array_push($this->feedback, 'Phone number can not exceed 25 characters.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
+    function validateBirthday($date) {
+        if ($date == '') {
+            return;
+        } else if (!preg_match("/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/", $date)) {
+            array_push($this->feedback, 'Date is not in a valid format.<br>');
+            $this->valid = false;
+            return;
+        } else if (strtotime($date) > time()) {
+            array_push($this->feedback, 'Date cannot be after today.<br>');
             $this->valid = false;
             return;
         }
