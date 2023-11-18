@@ -216,17 +216,11 @@ class Validator {
 
     // Validates a company description, flags valid to false if empty or above 500 characters
     function validateCompanyDescription($description) {
-        if (!empty($description)) {
-            if(strlen($description) <= 500) {
-                // This can be extended to further change the criteria for description validation
-                return;
-            } else {
-                array_push($this->feedback, 'Company description can not be over 500 characters.<br>');
-                $this->valid = false;
-                return;
-            }
+        if(strlen($description) <= 500) {
+            // This can be extended to further change the criteria for description validation
+            return;
         } else {
-            array_push($this->feedback, 'Company description can not be empty.<br>');
+            array_push($this->feedback, 'Company description can not be over 500 characters.<br>');
             $this->valid = false;
             return;
         }

@@ -371,6 +371,43 @@ class DBHandlerUser extends DBHandlerBase {
 }
 
 class DBHandlerCompany extends DBHandlerBase {
+    // Creates a new company with a name, description, and the id of the user requesting it. Returns true if successful, else returns false.
+    function createNewCompany($name, $description, $userId) {
+        // Prepare, bind and execute the SQL statement
+        $sql = 'INSERT INTO `company` (`id`, `name`, `description`) VALUES (NULL, ?, ?)';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $name, $description);
+        if ($stmt->execute()) {
+            // If the statement has executed, part two begins. Start by closing the previous statement.
+            $stmt->close();
+
+            // Retrieve the ID of the newly inserted company
+            $companyId = $this->conn->insert_id;
+
+            // Prepare a statement with the user id and company id to insert into company_management. 
+            // (Superuser is set to 1, as the user creating the company is automatically a superuser.)
+            $sql = 'INSERT INTO `company_management` (`user_id`, `company_id`, `superuser`) VALUES (?, ?, 1)';
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param('ii', $userId, $companyId);
+
+            if ($stmt->execute()) {
+                /*
+                    If all of these SQL statements have been executed successfully,
+                    the company is now properly stored in the database,
+                    with correct references to their proper foreign keys
+                */
+                $stmt->close();
+                return true;
+            } else {
+                $stmt->close();
+                return false;
+            }
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
     /*
         Function to retrieve a company id from a user id.
         Can be used to just check if a user is a part of any company as well.
@@ -402,8 +439,9 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
+    // Returns true if user is a superuser of a company, else returns false
     function isUserCompanySuperuser($userId) {
-
+        // Ask database if logged in member is found in the company_management table
         $sql = 'SELECT `superuser` FROM `company_management` WHERE `user_id` = ?';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $userId);
@@ -472,6 +510,40 @@ class DBHandlerCompany extends DBHandlerBase {
     function getCompanyDetailsFromUserId($userId) {
         $companyId = $this->getCompanyIdFromUserId($userId);
         return $companyDetails = $this->getCompanyDetailsFromCompanyId($companyId);
+    }
+
+    // Returns true if a company name is already taken, else returns false if it's available
+    function isCompanyNameTaken($name, $companyId = NULL) {
+        // Set up the basic SQL query
+        $sql = 'SELECT * FROM `company` WHERE LOWER(`name`) = LOWER(?)';
+
+        // If a company id is supplied, exclude this company from the search
+        if ($companyId !== NULL) {
+            $sql .= ' AND NOT (`id` = ?)';
+        }
+
+        // Prepare the statement
+        $stmt = $this->conn->prepare($sql);
+
+        // Bind the parameteres based on whether a company id is supplied or not
+        if ($companyId !== NULL) {
+            $stmt->bind_param('si', $name, $companyId);
+        } else {
+            $stmt->bind_param('s', $name);
+        }
+
+        // Execute the statement, get results and close the statement
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        if ($result->num_rows > 0) {
+            // If more than 0 rows are returned, the name is taken and we return true.
+            return true;
+        } else {
+            // If 0 rows are found, return false. The name is available.
+            return false;
+        }
     }
 
     // Update a company field, using the company id, what column to update and what value to update
