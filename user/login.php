@@ -8,9 +8,11 @@ $dbh = new DBHandlerUser();
 include_once '../assets/include/Validator.php';
 $validator = new Validator();
 
+// Set default feedback variables
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
+// If the user has pressed the submit button 
 if (isset($_POST['submit'])) {
 
     // Validate the login form inputs
@@ -19,9 +21,10 @@ if (isset($_POST['submit'])) {
     // If the form inputs are valid
     if ($validator->valid) {
         // Attempt to log in user with the supplied email and password
-        if ($dbh->loginUser($_POST['email'], $_POST['password']) != false) {
+        if ($dbh->loginUser($_POST['email'], $_POST['password'])) {
             // If successful login, userid is now in session. Redirect from login page.
             header('Location: ../index.php?loggedin');
+            exit();
         } else {
             // User has input a non-existent email, wrong email and/or password. Tell them.
             $feedbackForUser = 'Wrong email and/or password.<br>';

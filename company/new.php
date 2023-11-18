@@ -6,7 +6,22 @@ $conn = createDBConnection(); // Connects to the database
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
-$user_id = $_SESSION['user_id'];
+/* UNCOMMENT WHEN IT'S TIME TO REFACTOR
+// Include form input validator
+include_once '../assets/include/Validator.php';
+$validator = new Validator();
+
+// Include and establish connection with DB
+include_once '../assets/include/DBHandler.php';
+$dbhu = new DBHandlerUser();
+$dbhc = new DBHandlerCompany();
+
+// Ask database if logged in member is found in the company_management table
+if ($dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
+    // Redirect if user is already in a company
+    header('Location: ../403.php');
+}
+*/
 
 // Ask database if logged in member is found in the company_management table
 $sql = 'SELECT `company_id` FROM `company_management` WHERE `user_id` = ?';
@@ -118,7 +133,7 @@ function display() {
         <h1>New company</h1>
         <form action="" method="post">
             <div class="form-group">
-                <label for="name">Company name</label>
+                <label for="name">Company name <span class="text-danger">*</span></label>
                 <input type="text" id="name" name="name" class="form-control" placeholder="Enter your company name" autofocus>
             </div>
 

@@ -79,12 +79,15 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Select userdata from DB from an email. Returns an array with the userdata if successful, else returns false.
+    /*
+        Select userdata from DB from an email. Returns an array with the userdata if successful, else returns false.
+        Normally intended to verify login details and set a user ID in Session.
+    */
     function selectUserByEmail($email) {
         // Make sure the email is always lowercase, for consistency
         $email = strtolower($email);
 
-        // Select userdata with the email supplied. If it executes, the email is found in the DB.
+        // Select id, password and name from the email supplied. If it executes, the email is found in the DB.
         $sql = 'SELECT `id`, `password`, `first_name`, `last_name` FROM `user` WHERE `email` = ?';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('s', $email);
@@ -113,7 +116,13 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
+    /*
+        Retrieve all data fields for a user in the database. Used to display profile information for a specific user,
+        like on Profile View or viewing a sent Job Application.
+        Returns an array of information if user ID exists, else it returns false.
+    */
     function selectAllUserInfoByUserId($userId) {
+
         $sql = 'SELECT `email`, `password`, `first_name`, `last_name`, `telephone`, `location`, `birthday`, `picture`, `cv`, `searchable`, `competence` FROM `user` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $userId);
@@ -149,6 +158,30 @@ class DBHandlerUser extends DBHandlerBase {
             }
         } else {
             // Return if statement didn't execute.
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Retrieves a users ID from an email
+    function getUserIdByEmail($email) {
+        $sql = 'SELECT `id` FROM `user` WHERE `email` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $email);
+        if ($stmt->execute()) {
+            $stmt->store_result();
+            if ($stmt->num_rows == 1) {
+                //User found
+                $stmt->bind_result($userid);
+                $stmt->fetch();
+                return $userid;
+            } else {
+                //Return false if no user found
+                $stmt->close();
+                return false;
+            }
+        } else {
+            // Return false if statement didn't execute.
             $stmt->close();
             return false;
         }
@@ -198,6 +231,7 @@ class DBHandlerUser extends DBHandlerBase {
                 $_SESSION['user_id'] = $user_details[0];
                 $_SESSION['user_fname'] = $user_details[2];
                 $_SESSION['user_lname'] = $user_details[3];
+                return true;
             } else {
                 // Return false if password isn't verified
                 return false;
@@ -357,6 +391,7 @@ class DBHandlerCompany extends DBHandlerBase {
                 $stmt->fetch();
                 return $companyid;
             } else {
+                // Return false if user isn't a part of a company
                 $stmt->close();
                 return false;
             }
@@ -402,7 +437,7 @@ class DBHandlerCompany extends DBHandlerBase {
         else it returns false.
     */
     function getCompanyDetailsFromCompanyId($companyId) {
-        $sql = 'SELECT `name`, `description` FROM `company` WHERE `id` = ?';
+        $sql = 'SELECT `id`, `name`, `description` FROM `company` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $companyId);
         if ($stmt->execute()) {
@@ -411,7 +446,7 @@ class DBHandlerCompany extends DBHandlerBase {
             if ($stmt->num_rows > 0) {
                 
                 // Retrieve the company name and description from database
-                $stmt->bind_result($companyName, $companyDescription);
+                $stmt->bind_result($companyId, $companyName, $companyDescription);
                 $stmt->fetch();
                 $stmt->close();
 
@@ -421,7 +456,7 @@ class DBHandlerCompany extends DBHandlerBase {
                 }
 
                 // Return an array with the company name and description
-                return array($companyName, $companyDescription);
+                return array('companyId' => $companyId,'companyName' => $companyName, 'companyDescription' => $companyDescription);
             } else {
                 // If for some reason this has been called with a wrong company id, return false
                 $stmt->close();
@@ -439,6 +474,7 @@ class DBHandlerCompany extends DBHandlerBase {
         return $companyDetails = $this->getCompanyDetailsFromCompanyId($companyId);
     }
 
+    // Update a company field, using the company id, what column to update and what value to update
     function updateCompanyDetailWithCompanyId($companyId, $detail, $updatedDetail) {
         $sql = 'UPDATE `company` SET `' . $detail . '` = ? WHERE `company`.`id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -454,10 +490,13 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
+    // Updates a company name using company id and the new name
     function updateCompanyNameWithCompanyId($companyId, $newCompanyName) {
+        //TODO: check if company name is taken and return false if so
         return $this->updateCompanyDetailWithCompanyId($companyId, 'name', $newCompanyName);
     }
 
+    // Updates a company name using company id and the new name
     function updateCompanyDescriptionWithCompanyId($companyId, $newCompanyDescription) {
         return $this->updateCompanyDetailWithCompanyId($companyId, 'description', $newCompanyDescription);
     }
@@ -468,6 +507,24 @@ class DBHandlerCompany extends DBHandlerBase {
         $stmt->bind_param('i', $companyId);
         if ($stmt->execute()) {
             return true;
+        } else {
+            return false;
+        }
+    }
+
+    function addNewUserToCompany($email, $companyId) {
+        $dbhu = new DBHandlerUser();
+        $userId = $dbhu->getUserIdByEmail($email);
+        unset($dbhu);
+        if(!$this->getCompanyIdFromUserId($userId)) {
+            $sql = 'INSERT INTO `company_management` (`user_id`, `company_id`, `superuser`) VALUES (?, ?, 0)';
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param('ii', $userId, $companyId);
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

@@ -8,6 +8,7 @@ $dbh = new DBHandlerUser();
 include_once '../assets/include/Validator.php';
 $validator = new Validator();
 
+// Set default feedback variables
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 

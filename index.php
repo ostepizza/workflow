@@ -40,7 +40,7 @@ if(isset($_GET['loggedout'])) {
         </div>
 
         <?php
-        if(isset($_SESSION['userid'])) {
+        if(isset($_SESSION['user_id'])) {
             echo('
         <div class="card mt-3">
             <div class="card-body">

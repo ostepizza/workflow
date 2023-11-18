@@ -26,13 +26,10 @@ if(!empty($_GET)){
 
 // Check if the user is a part of a company
 if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
-    // Retrieve the company ID user is a part of
-    //$companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id']);
-
     // If member is in a company, retrieve company data
     $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
-    $companyName = $companyDetails[0];
-    $companyDescription = $companyDetails[1];
+    $companyName = $companyDetails['companyName'];
+    $companyDescription = $companyDetails['companyDescription'];
 
     // TODO: Here, retrieve statistics about job listings etc for display in the dashboard
 
@@ -40,7 +37,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
     echo '
     <div class="row mt-5">
         <div class="col-md-12">
-            <h1>Company dashboard - ' . $companyName . '</h1>
+            <h1>' . $companyName . ' - Company dashboard</h1>
             <p>' . $companyDescription . '</p>
         </div>
     </div>
@@ -78,7 +75,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                 <hr>
                 <a href="../jobs/new.php"><button type="button" class="btn btn-primary w-100">Create new job listing</button></a>
                 <a href="view_members.php"><button type="button" class="btn btn-secondary w-100 mt-2">View members of company</button></a>
-                <a href="edit.php"><button type="button" class="btn btn-secondary w-100 mt-2">Edit company</button></a>
+                <a href="edit.php"><button type="button" class="btn btn-secondary w-100 mt-2">Edit company details</button></a>
             </div>
             <div class="row mt-3">
                 <h2>Statistics</h2>

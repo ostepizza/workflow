@@ -3,22 +3,22 @@
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
+// Include form input validator
+include_once '../assets/include/Validator.php';
+$validator = new Validator();
+
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
 $dbhu = new DBHandlerUser();
 $dbhc = new DBHandlerCompany();
-
-// Include form input validator
-include_once '../assets/include/Validator.php';
-$validator = new Validator();
 
 // If the user is a company superuser
 if ($dbhc->isUserCompanySuperuser($_SESSION['user_id'])) {
     // If member is a superuser of the company, retrieve company data
     $companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id']);
     $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
-    $companyName = $companyDetails[0];
-    $companyDescription = $companyDetails[1];
+    $companyName = $companyDetails['companyName'];
+    $companyDescription = $companyDetails['companyDescription'];
 } else {
     // Redirect if user isn't a company superuser
     header('Location: ../403.php');
@@ -31,18 +31,13 @@ if (isset($_POST['companyUpdate'])) {
 
     if ($validator->valid) {
         // This next section seems inefficient but I'm tired
-        if ($dbhc->updateCompanyNameWithCompanyId($companyId, $_POST['name'])) {
-            $feedbackForUser .= 'Company name was updated.<br>';
-            $feedbackColor = 'success';
-            $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
-            $companyName = $companyDetails[0];
-        }
-        if ($dbhc->updateCompanyDescriptionWithCompanyId($companyId, $_POST['description'])) {
-            $feedbackForUser .= 'Company description was updated.<br>';
-            $feedbackColor = 'success';
-            $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
-            $companyDescription = $companyDetails[1];
-        }
+        $dbhc->updateCompanyNameWithCompanyId($companyId, $_POST['name']);
+        $dbhc->updateCompanyDescriptionWithCompanyId($companyId, $_POST['description']);
+        $feedbackForUser .= 'Company details were updated.<br>';
+        $feedbackColor = 'success';   
+        $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
+        $companyName = $companyDetails['companyName'];
+        $companyDescription = $companyDetails['companyDescription'];
     } else {
 
         // If the form validation failed, tell the user what went wrong.
@@ -100,8 +95,8 @@ global $companyName, $companyDescription;
 <a href="index.php"><button type="button" class="btn btn-secondary mb-3 mt-5">&lt; Return to dashboard</button></a>
 
 <div class="row">
-    <div class="col-md-12">
-        <h1>Edit company <a href="#" data-bs-toggle="modal" data-bs-target=".modalDeleteCompany"><button type="button" class="btn btn-danger">Delete company</button></a></h1>
+    <div class="col-md-8">
+        <h1>Edit company details <a href="#" data-bs-toggle="modal" data-bs-target=".modalDeleteCompany"><button type="button" class="btn btn-danger">Delete company</button></a></h1>
         <form action="" method="post">
             <div class="form-group">
                 <label for="name">Company name</label>
@@ -110,7 +105,7 @@ global $companyName, $companyDescription;
 
             <div class="form-group mt-3">
                 <label for="description">Company description (optional, max 500 characters)</label>
-                <textarea class="form-control" id="description" name="description" rows="3"><?php echo $companyDescription; ?></textarea>
+                <textarea class="form-control" id="description" name="description" rows="10"><?php echo $companyDescription; ?></textarea>
             </div>
 
             <button type="submit" id="submit" name="companyUpdate" class="btn btn-primary mt-3">Submit</button>

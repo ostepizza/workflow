@@ -2,18 +2,18 @@
 
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
-$dbh = new DBHandlerUser();
+$dbhu = new DBHandlerUser();
+$dbhc = new DBHandlerCompany();
 
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
-// Get userinfo and display it for debugging reasons while making the page
-if($userInfo = $dbh->selectAllUserInfoByUserId($_SESSION['user_id'])) {
-    //print_r($userInfo);
-}
+// Retrieve the users info
+$userInfo = $dbhu->selectAllUserInfoByUserId($_SESSION['user_id']);
+$userInfo = array_merge($userInfo, $dbhc->getCompanyDetailsFromUserId($_SESSION['user_id']));
 
 if (isset($_GET['toggleSearchable'])) {
-    $dbh->toggleSearchable($_SESSION['user_id']);
+    $dbhu->toggleSearchable($_SESSION['user_id']);
     header('Location: index.php?updatedSearchable');
 } if (isset($_GET['updatedSearchable'])) {
     if($userInfo['searchable']) {
@@ -22,14 +22,10 @@ if (isset($_GET['toggleSearchable'])) {
     } else {
         $feedbackForUser = 'You are no longer searchable to employers.';
     }
-    
-
 }
 
 function display() {
 global $userInfo;
-
-
 
 $userInfo['location'] = $userInfo['location'] ?? 'No location added';
 $userInfo['telephone'] = $userInfo['telephone'] ?? 'No phone added';
@@ -79,13 +75,18 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         <hr>
         <div class="row">
             <div class="col-md-4">
-                Birthday: <?php echo $birthday; ?>
+                Email: <?php echo $userInfo['email']; ?>
             </div>
             <div class="col-md-4">
                 Telephone: <?php echo $userInfo['telephone']; ?>
             </div>
             <div class="col-md-4">
-                nothing LOL
+                Birthday: <?php echo $birthday; ?>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <?php if (!empty($userInfo['companyName'])) { echo '<b>Member of <a href="../company/index.php">' . $userInfo['companyName'] . '</a></b>'; }; ?>
             </div>
         </div>
         <br>
