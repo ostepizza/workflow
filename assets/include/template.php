@@ -97,7 +97,7 @@ echo '
                     <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'jobs/index.php">Job listings</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'company/index.php">Company</a>
+                    <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'company/index.php">Company dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link px-2 text-muted" href="' . $relativePathToRoot . 'about.php">About</a>

@@ -3,106 +3,66 @@
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
-include("../assets/include/connection.php");
-$conn = createDBConnection(); // Connects to the database
-$user_id = $_SESSION['user_id'];
+// Include form input validator
+include_once '../assets/include/Validator.php';
+$validator = new Validator();
 
-// Ask database if logged in member is found in the company_management table
-$sql = 'SELECT cm.company_id, cm.superuser, c.name AS company_name
-    FROM company_management cm
-    JOIN company c ON c.id = cm.company_id
-    WHERE cm.user_id = ?';
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $user_id);
-if ($stmt->execute()) {
-    $stmt->store_result();
-    
-    if ($stmt->num_rows == 1) {
-        // If one row is found, the user is a part of a company
-        // Store the company id and if the user is a superuser for later
-        $stmt->bind_result($company_id, $superuser, $company_name);
-        $stmt->fetch();
-        $stmt->close();
-    } else {
-        //Redirect if user not in a company
-        $stmt->close();
-        header('Location: ../403.php');
-    }
+// Include and establish connection with DB
+include_once '../assets/include/DBHandler.php';
+$dbhu = new DBHandlerUser();
+$dbhc = new DBHandlerCompany();
+
+// Ask database if logged in member is found in the company_management table and retrieve company id if so
+if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
+    $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
+    $companyName = $companyDetails['companyName'];
+    $companyDescription = $companyDetails['companyDescription'];
+} else {
+    // Redirect if user isn't in a company
+    header('Location: ../403.php');
 }
 
-if($superuser = true) {
+if ($dbhc->isUserCompanySuperuser($_SESSION['user_id'])) {
     //Handle the add member form
     if (isset($_POST['addUserToCompany'])) {
-        //If the user has pressed the update button
-        if (!empty($_POST['email'])) {
-            if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                //Check if email belongs to user
-                $sql = 'SELECT `id` FROM `user` WHERE `email` = ?';
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param('s', $_POST['email']);
-                if ($stmt->execute()) {
-                    $stmt->store_result();
-            
-                    if ($stmt->num_rows == 1) {
-                        //If email belongs to a user, check if user is member of another company
-                        //Start with binding and closing statement from earlier
-                        $stmt->bind_result($user_id_to_add);
-                        $stmt->fetch();
-                        $stmt->close();
+        // Check if the new user field is valid
+        $validator->validateEmail($_POST['email']);
 
-                        //Check if user_id is present in company_management table, and if so, retrieve company id as well
-                        $sql = 'SELECT `user_id` FROM `company_management` WHERE `user_id` = ?';
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param('i', $user_id_to_add);
-                        if ($stmt->execute()) {
-                            $stmt->store_result();
-                            if ($stmt->num_rows == 0) {
-                                //user is not present in table, and can be added
-                                $sql = 'INSERT INTO `company_management` (`user_id`, `company_id`, `superuser`) VALUES (?, ?, 0)';
-                                $stmt = $conn->prepare($sql);
-                                $stmt->bind_param('ii', $user_id_to_add, $company_id);
-                                if ($stmt->execute()) {
-                                    $feedbackForUser .= 'User has been successfully added to the company.<br>';
-                                    $feedbackColor = 'success';
-                                } else {
-                                    $feedbackForUser .= 'An error occurred while adding the user to the company.<br>';
-                                }
-                            } else if ($stmt->num_rows == 1) {
-                                $feedbackForUser .= 'User ' . $_POST['email'] . ' is already a member of a company.<br>';
-                            }  
-                        } else {
-                            $feedbackForUser .= 'An error occurred.<br>';
-                        }                 
-                    } else if ($stmt->num_rows == 0) {
-                        $feedbackForUser .= 'Email ' . $_POST['email'] . ' does not belong to a user.<br>';
-                    } else {
-                        $feedbackForUser .= 'An error occurred.<br>';
-                    }
+        if($validator->valid) {
+
+            // The email is a valid format, so check if the email belongs to an account
+            if($dbhu->isEmailTaken($_POST['email'])) {
+                if($dbhc->addNewUserToCompany($_POST['email'], $companyId)) {
+                    $feedbackForUser .= 'User has been successfully added to the company.<br>';
+                    $feedbackColor = 'success';
                 } else {
-                    $feedbackForUser .= 'An error occurred.<br>';
+                    $feedbackForUser .= 'User with email ' . $_POST['email'] . ' already belongs to a company.<br>';
                 }
             } else {
-                $feedbackForUser .= $_POST['email'] . ' is not a valid email.<br>';
+                $feedbackForUser .= 'Email ' . $_POST['email'] . ' does not belong to a user.<br>';
             }
+
         } else {
-            $feedbackForUser .= "Email can not be empty.<br>";
+            // If the email validation failed, tell the user what went wrong.
+            $feedbackForUser = $validator->printAllFeedback();
         }
     }
 }
 
 function display() {
-global $company_id, $company_name, $company_description, $conn;
+global $companyId, $companyName, $companyDescription, $dbhc;
 
+$superuser = $dbhc->isUserCompanySuperuser($_SESSION['user_id']);
 ?>
 <!-- Content here -->
 <div class="row mt-5">
     <div class="col-md-12">
         <a href="index.php"><button type="button" class="btn btn-secondary mb-3">&lt; Return to dashboard</button></a>
         <?php
-        echo '<h1> ' . $company_name . ' members</h1>';
+        echo '<h1> ' . $companyName . ' members</h1>';
 
-        //If superuser, have possibility to add another member
-        if ($superuser = true) {
+        //If user is a superuser, give them the possibility to add another member
+        if ($superuser) {
             //Display the add member form
             echo '
             <form action="" method="post" class="row row-cols-lg-auto g-3 align-items-center">
@@ -115,58 +75,56 @@ global $company_id, $company_name, $company_description, $conn;
                 </div>
 
                 <div class="col-12">
-                    <button type="submit" id="submit" name="addUserToCompany" class="btn btn-primary">Add user</button>
+                    <button type="submit" id="addUserToCompany" name="addUserToCompany" class="btn btn-primary">Add user</button>
                 </div>
             </form>
             ';
         }
 
-        //Retrieve company users
-        $sql = 'SELECT u.first_name, u.last_name, u.email, cm.superuser
-                FROM user u
-                JOIN company_management cm ON u.id = cm.user_id
-                JOIN company c ON c.id = cm.company_id
-                WHERE c.id = ?
-                ORDER BY cm.superuser DESC';
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('i', $company_id);
-        if ($stmt->execute()) {
-
-            echo '
+        /*
+            This looks chaotic, but bear with me as tables are a pain to work with beautifully in PHP.
+            First, we retrieve all users from the company as an array.
+            Then we loop through the array and display the users in a table, with "Admin" if the user being looped through is a superuser.
+            If the user accessing the page is a superuser, we give them the possibility to make other users superusers or remove them from the company.
+        */
+        if ($users = $dbhc->retrieveAllCompanyUsers($companyId)) { ?>
             <table class="table table-hover table-bordered table-striped mt-3">
                 <thead>
                     <tr>
                         <th scope="col">First name</th>
                         <th scope="col">Last name</th>
                         <th scope="col">E-mail</th>
-                        <th scope="col"></th>';
+                        <th scope="col"></th>
+                        <?php
                         if($superuser) {
                             echo '<th scope="col">Manage</th>';
                         }
-            echo    '<tr>
-                </thead>';
-
-            $result = $stmt->get_result();
-            while ($row = $result->fetch_assoc()) {
-                if ($row['superuser'] == 1) {
+                        ?>
+                    <tr>
+                </thead>
+                <tbody>
+            <?php
+            foreach($users as $user) {
+                if ($user['superuser'] == 1) {
                     $isAdmin = "Admin";
                 } else {
-                    $isAdmin = "";
+                    $isAdmin = ""; 
                 }
                 echo '
-                <tr>
-                    <td>' . $row['first_name'] . '</td>
-                    <td>' . $row['last_name'] . '</td>
-                    <td><a href="mailto:' . $row['email'] . '">' . $row['email'] . '</a></td>
-                    <td>' . $isAdmin . '</td>';
-                    if($superuser) {
-                        echo '<td><button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Make admin"><i class="fa fa-arrow-circle-up"></i></button><button type="button" class="btn btn-danger"  data-bs-toggle="tooltip" data-bs-placement="top" title="Remove user from company"><i class="fa fa-times-circle"></i></button></td>';
-                    }
-        echo    '</tr>';
+                    <tr>
+                        <td>' . $user['first_name'] . '</td>
+                        <td>' . $user['last_name'] . '</td>
+                        <td><a href="mailto:' . $user['email'] . '">' . $user['email'] . '</a></td>
+                        <td>' . $isAdmin . '</td>';
+                        if($superuser) {
+                            echo '<td><button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Make admin"><i class="fa fa-arrow-circle-up"></i></button><button type="button" class="btn btn-danger"  data-bs-toggle="tooltip" data-bs-placement="top" title="Remove user from company"><i class="fa fa-times-circle"></i></button></td>';
+                        }
+                echo '</tr>';
             }
         }
-        echo '</table>';
-        ?>
+        ?>  
+            </tbody>
+        </table>
     </div>
 </div>
 <!-- Content here -->

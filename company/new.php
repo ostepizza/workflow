@@ -1,111 +1,52 @@
 <?php include_once '../assets/include/template.php';
 
-include("../assets/include/connection.php");
-$conn = createDBConnection(); // Connects to the database
-
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
-$user_id = $_SESSION['user_id'];
+// Include form input validator
+include_once '../assets/include/Validator.php';
+$validator = new Validator();
+
+// Include and establish connection with DB
+include_once '../assets/include/DBHandler.php';
+$dbhu = new DBHandlerUser();
+$dbhc = new DBHandlerCompany();
 
 // Ask database if logged in member is found in the company_management table
-$sql = 'SELECT `company_id` FROM `company_management` WHERE `user_id` = ?';
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $user_id);
-if ($stmt->execute()) {
-    $stmt->store_result();
-
-    if ($stmt->num_rows > 0) {
-        // If any rows are found, the user is a part of a company
-        // Redirect to the 403, since users are only supposed to make max 1 company
-        $stmt->close();
-        header('Location: ../403.php');
-    }
-    $stmt->close();
+if ($dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
+    // Redirect if user is already in a company
+    header('Location: ../403.php');
 }
 
+// If user has requested to register a new company
 if (isset($_POST['submit'])) {
-    $allConditionsMet = true; // Sets up a fail condition if user-input is bad
+    // Validate company name and description
+    $validator->validateCompanyName($_POST['name']);
+    $validator->validateCompanyDescription($_POST['description']);
 
-    if (empty($_POST['name'])) {
-        // Check if company name is empty
-        $feedbackForUser .= "You need to enter a company name.<br>";
-        $allConditionsMet = false;
-    } else if (strlen($_POST['name']) > 100) {
-        $feedbackForUser .= "Your company name can not exceed 100 characters.<br>";
-        $allConditionsMet = false;
-    }
-
-    if (!empty($_POST['description'])) {
-        // Check the email before sending a query to SQL server to reduce query attempts
-        if (strlen($_POST['description']) > 500) {
-            $feedbackForUser .= 'Description needs to be shorter than 500 characters.<br>';
-            $allConditionsMet = false;
-        }
-    }
-
-    if ($allConditionsMet) {
-        // Get variables needed for the SQL statements
-        $name = $_POST['name'];
-        $description = $_POST['description'];
-
-        // Try to find the name provided in the form in the database
-        $sql = 'SELECT `name` FROM `company` WHERE `name` = ?';
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('s', $name);
-        if ($stmt->execute()) {
-            $stmt->store_result();
-    
-            if ($stmt->num_rows == 1) {
-                // If we get a row, compare the names in lower case - just to be sure
-                $stmt->bind_result($result_name);
-                $stmt->fetch();
-
-                if (strtolower($name) == strtolower($result_name)) {
-                    $feedbackForUser = "Company with this name already exists!";
-                } 
-
-                $stmt->close();
-            } else if ($stmt->num_rows < 1) {
-                // No existing companies were found, so the magic begins here
-                // First we make sure the statement is closed
-                $stmt->close();
-                
-                // Then we start over, and insert the company name and description into the database
-                $sql = 'INSERT INTO `company` (`id`, `name`, `description`) VALUES (NULL, ?, ?)';
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param('ss', $name, $description);
-                
-                if ($stmt->execute()) {
-                    // If it executes, close the statement and start with the second part
-                    $stmt->close();
-
-                    // Retrieve the ID of the newly inserted company
-                    $company_id = $conn->insert_id;
-
-                    // Then insert the user id and company id in the company_management table
-                    // This table is used to store data about who has access to what company, and with what permissions
-                    // With the below SQL statement the user registering the company becomes a part of it automatically, with elevated privileges
-                    $sql = 'INSERT INTO `company_management` (`user_id`, `company_id`, `superuser`) VALUES (?, ?, 1)';
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param('ii', $user_id, $company_id);
-
-                    if ($stmt->execute()) {
-                        // If all of these SQL statements have been executed successfully,
-                        // the company is now properly stored in the database, with correct
-                        // references to their proper foreign keys
-                        $stmt->close();
-                        header('Location: index.php?registerSuccess');
-                    } else {
-                        $feedbackForUser = "An error occurred while creating a company.<br>";
-                    }
-                } else {
-                        $feedbackForUser = "An error occurred while creating a company.<br>";
-                }
+    // If form input is valid, check if the company name is taken
+    if ($validator->valid) {
+        // If the company name is not taken, try to craete a company
+        if(!$dbhc->isCompanyNameTaken($_POST['name'])) {
+            
+            if($dbhc->createNewCompany($_POST['name'], $_POST['description'], $_SESSION['user_id'])) {
+                /* 
+                    Try to create a company with the name and description provided in the form
+                    If the company is created successfully, the user is automatically added to the company.
+                    Redirect with a success-message.
+                */
+                header('Location: index.php?registerSuccess');
             } else {
-                $feedbackForUser = "An error occurred.";
+                // Statement didn't execute properly
+                $feedbackForUser = "An error occurred while creating a company.<br>";
             }
+        } else {
+            // If the company name is taken
+            $feedbackForUser = "Company with this name already exists!<br>";
         }
+    } else {
+        // If the form validation failed, tell the user what went wrong.
+        $feedbackForUser = $validator->printAllFeedback();
     }
 }
 
@@ -118,7 +59,7 @@ function display() {
         <h1>New company</h1>
         <form action="" method="post">
             <div class="form-group">
-                <label for="name">Company name</label>
+                <label for="name">Company name <span class="text-danger">*</span></label>
                 <input type="text" id="name" name="name" class="form-control" placeholder="Enter your company name" autofocus>
             </div>
 

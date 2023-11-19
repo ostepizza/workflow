@@ -36,7 +36,31 @@ CREATE TABLE `company_management` (
     FOREIGN KEY (`company_id`) REFERENCES `company`(`id`)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-) ENGINE = InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `job_category` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `title` varchar(255) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `job_listing` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) DEFAULT NULL,
+    `description` VARCHAR(5000) DEFAULT NULL,
+    `deadline` date DEFAULT NULL,
+    `published` TINYINT(1) DEFAULT 0 NOT NULL,
+    `views` int(11) DEFAULT 0 NOT NULL,
+    `company_id` int(11) NOT NULL,
+    `job_category_id` int(11) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`company_id`) REFERENCES `company`(`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (`job_category_id`) REFERENCES `job_category`(`id`)
+        ON DELETE SET NULL
+        ON UPDATE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 -- Some test data
