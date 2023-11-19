@@ -11,71 +11,66 @@ class DBHandlerBase {
 
     // Creates a connection to the Database
     protected function createDBConnection() {
-        $servername = "localhost";
+        $serverip = "localhost";
         $username = "root";
         $password = "";
         $dbname = "workflowdb";
 
         // Create connection
-        $conn = new mysqli($servername, $username, $password, $dbname);
+        $conn = new mysqli($serverip, $username, $password, $dbname);
 
         // Check connection
         if ($conn->connect_error) {
             die("Connection to the database failed: " . $conn->connect_error);
         }
 
+        // Set charset to utf8
         mysqli_set_charset($conn, "utf8");
+
+        // Return the connection
         return $conn;
     }
 }
 
 class DBHandlerUser extends DBHandlerBase {
-    // Checks if an email is already present in the db. Returns true if it finds an email, and returns false if email is available.
-    function isEmailTaken($email) {
+    /*
+        // Checks if an email is already present in the db. Returns true if it finds an email, and returns false if email is available.
+        // Optional parameter userid can be used to exclude a user from the search, in case an email is being updated.
+    */
+    function isEmailTaken($email, $userId = NULL) {
         // Make sure the email is always lowercase, for consistency
         $email = strtolower($email);
 
-        /*
-            This SQL statement checks whether the email is already in the database or not.
-            If it returns more than 0 rows, then it exists.
-        */
-        $sql = 'SELECT count(*) FROM `user` WHERE `email` = ?';
+        // Set up the basic SQL query
+        $sql = 'SELECT count(*) FROM `user` WHERE LOWER(`email`) = LOWER(?)';
+
+        // If a user id is supplied, exclude this user from the search
+        if ($userId !== NULL) {
+            $sql .= ' AND NOT (`id` = ?)';
+        }
+
+        // Prepare the statement
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('s', $email);
+
+        // Bind the parameteres based on whether a company id is supplied or not
+        if ($userId !== NULL) {
+            $stmt->bind_param('si', $email, $userId);
+        } else {
+            $stmt->bind_param('s', $email);
+        }
+
+        // Execute the statement, get results and close the statement
         $stmt->execute();
         $stmt->bind_result($count);
         $stmt->fetch();
         $stmt->close();
 
-        // If more than zero emails are found, the email is taken
         if ($count > 0) {
-            // Return true since email is already present in DB
+            // If more than 0 rows are returned, the name is taken and we return true.
             return true;
         } else {
-            // Return false since email is available
+            // If 0 rows are found, return false. The name is available.
             return false;
-        }
-    }
-
-    function isEmailTakenExceptByUser($email, $userid) {
-        // Make sure the email is always lowercase, for consistency
-        $email = strtolower($email);
-
-        // Select userdata with the email supplied. If it executes, the email is found in the DB.
-        $sql = 'SELECT `email` FROM `user` WHERE `id` = ?';
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('i', $userid);
-        $stmt->execute();
-        $stmt->bind_result($emailInDB);
-        $stmt->fetch();
-        $stmt->close();
-
-        if ($email == $emailInDB) {
-            // Return false since email is users
-            return false;
-        } else {
-            // If the email provided isn't the users in the database, check if it's taken
-            return $this->isEmailTaken($email);
         }
     }
 
@@ -512,7 +507,10 @@ class DBHandlerCompany extends DBHandlerBase {
         return $companyDetails = $this->getCompanyDetailsFromCompanyId($companyId);
     }
 
-    // Returns true if a company name is already taken, else returns false if it's available
+    /*
+        Returns true if a company name is already taken, else returns false if it's available
+        Optional parameter companyId can be used to exclude a company from the search, in case a company name is being updated.
+    */
     function isCompanyNameTaken($name, $companyId = NULL) {
         // Set up the basic SQL query
         $sql = 'SELECT * FROM `company` WHERE LOWER(`name`) = LOWER(?)';
@@ -584,20 +582,50 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
+    // Adds a new user to a company, with the users email and a company id. Returns true if successful, else returns false.
     function addNewUserToCompany($email, $companyId) {
+        // Create a new DBHandlerUser object to retrieve the user id from the email, then destroy the object
         $dbhu = new DBHandlerUser();
         $userId = $dbhu->getUserIdByEmail($email);
         unset($dbhu);
+
+        // If the user id is not already in a company, add the user to the company. Else return false.
         if(!$this->getCompanyIdFromUserId($userId)) {
             $sql = 'INSERT INTO `company_management` (`user_id`, `company_id`, `superuser`) VALUES (?, ?, 0)';
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param('ii', $userId, $companyId);
+
+            // If the statement successfully executes, return true. If something somehow goes wrong, return false.
             if ($stmt->execute()) {
                 return true;
             } else {
                 return false;
             }
         } else {
+            return false;
+        }
+    }
+
+    // Retrieves all company users as an array. Returns false if something goes wrong.
+    function retrieveAllCompanyUsers($companyId) {
+        // Select userdata from DB from the company ID.
+        $sql = 'SELECT u.id, u.first_name, u.last_name, u.email, cm.superuser
+                FROM user u
+                JOIN company_management cm ON u.id = cm.user_id
+                JOIN company c ON c.id = cm.company_id
+                WHERE c.id = ?
+                ORDER BY cm.superuser DESC';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+
+        // If the statement executes, return the array of userinfo. Else return false.
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            $users = $result->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            return $users;
+        } else {
+            $stmt->close();
             return false;
         }
     }

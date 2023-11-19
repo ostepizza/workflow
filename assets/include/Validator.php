@@ -179,7 +179,7 @@ class Validator {
         Sets the valid flag to false if $fieldValue is longer than the $maxLength
     */
     function validateGenericField($fieldValue, $fieldName, $maxLength) {
-        if (strlen($field) > $maxLength) {
+        if (strlen($fieldName) > $maxLength) {
             array_push($this->feedback, $fieldName . ' can not exceed ' . $maxLength . ' characters.<br>');
             $this->valid = false;
             return;

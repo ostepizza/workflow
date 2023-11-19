@@ -39,7 +39,7 @@ if (isset($_POST['submitProfile'])) {
     if($validator->valid) {
         // If all the fields are valid, check if the email is taken        
 
-        if(!$dbhu->isEmailTakenExceptByUser($_POST['email'], $_SESSION['user_id'])){
+        if(!$dbhu->isEmailTaken($_POST['email'], $_SESSION['user_id'])){
 
             // If the email is not found in the database, proceed with registration
             $dbhu->updateEmail($_SESSION['user_id'], $_POST['email']);

@@ -24,12 +24,9 @@ if (isset($_POST['submit'])) {
     $validator->validateCompanyName($_POST['name']);
     $validator->validateCompanyDescription($_POST['description']);
 
+    // If form input is valid, check if the company name is taken
     if ($validator->valid) {
-        // Get variables needed for the SQL statements
-        $name = $_POST['name'];
-        $description = $_POST['description'];
-
-        // If the company name is not taken
+        // If the company name is not taken, try to craete a company
         if(!$dbhc->isCompanyNameTaken($_POST['name'])) {
             
             if($dbhc->createNewCompany($_POST['name'], $_POST['description'], $_SESSION['user_id'])) {

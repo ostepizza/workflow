@@ -52,6 +52,7 @@ if ($dbhc->isUserCompanySuperuser($_SESSION['user_id'])) {
 function display() {
 global $companyId, $companyName, $companyDescription, $dbhc;
 
+$superuser = $dbhc->isUserCompanySuperuser($_SESSION['user_id']);
 ?>
 <!-- Content here -->
 <div class="row mt-5">
@@ -60,8 +61,8 @@ global $companyId, $companyName, $companyDescription, $dbhc;
         <?php
         echo '<h1> ' . $companyName . ' members</h1>';
 
-        //If superuser, have possibility to add another member
-        if ($dbhc->isUserCompanySuperuser($_SESSION['user_id'])) {
+        //If user is a superuser, give them the possibility to add another member
+        if ($superuser) {
             //Display the add member form
             echo '
             <form action="" method="post" class="row row-cols-lg-auto g-3 align-items-center">
@@ -80,58 +81,50 @@ global $companyId, $companyName, $companyDescription, $dbhc;
             ';
         }
 
-        // REFACTORING HAS GOTTEN TO HERE
-        // REFACTORING HAS GOTTEN TO HERE
-        // REFACTORING HAS GOTTEN TO HERE
-        // REFACTORING HAS GOTTEN TO HERE
-        // REFACTORING HAS GOTTEN TO HERE
-
-        //Retrieve company users
-        $sql = 'SELECT u.first_name, u.last_name, u.email, cm.superuser
-                FROM user u
-                JOIN company_management cm ON u.id = cm.user_id
-                JOIN company c ON c.id = cm.company_id
-                WHERE c.id = ?
-                ORDER BY cm.superuser DESC';
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('i', $company_id);
-        if ($stmt->execute()) {
-
-            echo '
+        /*
+            This looks chaotic, but bear with me as tables are a pain to work with beautifully in PHP.
+            First, we retrieve all users from the company as an array.
+            Then we loop through the array and display the users in a table, with "Admin" if the user being looped through is a superuser.
+            If the user accessing the page is a superuser, we give them the possibility to make other users superusers or remove them from the company.
+        */
+        if ($users = $dbhc->retrieveAllCompanyUsers($companyId)) { ?>
             <table class="table table-hover table-bordered table-striped mt-3">
                 <thead>
                     <tr>
                         <th scope="col">First name</th>
                         <th scope="col">Last name</th>
                         <th scope="col">E-mail</th>
-                        <th scope="col"></th>';
+                        <th scope="col"></th>
+                        <?php
                         if($superuser) {
                             echo '<th scope="col">Manage</th>';
                         }
-            echo    '<tr>
-                </thead>';
-
-            $result = $stmt->get_result();
-            while ($row = $result->fetch_assoc()) {
-                if ($row['superuser'] == 1) {
+                        ?>
+                    <tr>
+                </thead>
+                <tbody>
+            <?php
+            foreach($users as $user) {
+                if ($user['superuser'] == 1) {
                     $isAdmin = "Admin";
                 } else {
-                    $isAdmin = "";
+                    $isAdmin = ""; 
                 }
                 echo '
-                <tr>
-                    <td>' . $row['first_name'] . '</td>
-                    <td>' . $row['last_name'] . '</td>
-                    <td><a href="mailto:' . $row['email'] . '">' . $row['email'] . '</a></td>
-                    <td>' . $isAdmin . '</td>';
-                    if($superuser) {
-                        echo '<td><button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Make admin"><i class="fa fa-arrow-circle-up"></i></button><button type="button" class="btn btn-danger"  data-bs-toggle="tooltip" data-bs-placement="top" title="Remove user from company"><i class="fa fa-times-circle"></i></button></td>';
-                    }
-        echo    '</tr>';
+                    <tr>
+                        <td>' . $user['first_name'] . '</td>
+                        <td>' . $user['last_name'] . '</td>
+                        <td><a href="mailto:' . $user['email'] . '">' . $user['email'] . '</a></td>
+                        <td>' . $isAdmin . '</td>';
+                        if($superuser) {
+                            echo '<td><button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Make admin"><i class="fa fa-arrow-circle-up"></i></button><button type="button" class="btn btn-danger"  data-bs-toggle="tooltip" data-bs-placement="top" title="Remove user from company"><i class="fa fa-times-circle"></i></button></td>';
+                        }
+                echo '</tr>';
             }
         }
-        echo '</table>';
-        ?>
+        ?>  
+            </tbody>
+        </table>
     </div>
 </div>
 <!-- Content here -->

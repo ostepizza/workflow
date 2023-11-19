@@ -30,16 +30,20 @@ if (isset($_POST['companyUpdate'])) {
     $validator->validateCompanyDescription($_POST['description']);
 
     if ($validator->valid) {
-        // This next section seems inefficient but I'm tired
-        $dbhc->updateCompanyNameWithCompanyId($companyId, $_POST['name']);
-        $dbhc->updateCompanyDescriptionWithCompanyId($companyId, $_POST['description']);
-        $feedbackForUser .= 'Company details were updated.<br>';
-        $feedbackColor = 'success';   
-        $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
-        $companyName = $companyDetails['companyName'];
-        $companyDescription = $companyDetails['companyDescription'];
+        if(!$dbhc->isCompanyNameTaken($_POST['name'], $companyId)) {
+            // This next section seems inefficient but I'm tired
+            $dbhc->updateCompanyNameWithCompanyId($companyId, $_POST['name']);
+            $dbhc->updateCompanyDescriptionWithCompanyId($companyId, $_POST['description']);
+            $feedbackForUser .= 'Company details were updated.<br>';
+            $feedbackColor = 'success';   
+            $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
+            $companyName = $companyDetails['companyName'];
+            $companyDescription = $companyDetails['companyDescription'];
+        } else {
+            $feedbackForUser .= "Company with this name already exists!<br>";
+        }
+        
     } else {
-
         // If the form validation failed, tell the user what went wrong.
         $feedbackForUser = $validator->printAllFeedback();
     }
