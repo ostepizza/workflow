@@ -630,4 +630,159 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 }
+
+class DBHandlerListing extends DBHandlerCompany {
+    // Retrieves an array of published listings where the deadline hasn't passed yet. Returns false if something goes wrong.
+    function getAllListings() {
+        $sql = 'SELECT * FROM `job_listing` WHERE `published` = 1 AND `deadline` > NOW() ORDER BY `deadline` ASC';
+        $stmt = $this->conn->prepare($sql);
+
+        // If the statement executes, return an array with all the listings. Else return false.
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            $listings = $result->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            return $listings;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Retrieves an array of available job categories. Else returns false.
+    function getAllCategories() {
+        $sql = 'SELECT * FROM `job_category`';
+        $stmt = $this->conn->prepare($sql);
+
+        // If the statement executes, return an array with all the available categories. Else return false.
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            $categories = $result->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            return $categories;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Retrieves all listing information from a listing id. Returns an array with the listing info if successful, else returns false.
+    function getListing($listingId) {
+        // Select all listing info, from both the listing, company and job_category tables
+        $sql = 'SELECT l.id, l.name, l.description, l.deadline, l.published, l.views, l.company_id, l.job_category_id, jc.title as job_category_name, c.name as company_name 
+            FROM job_listing l
+            JOIN company c ON l.company_id = c.id
+            JOIN job_category jc ON l.job_category_id = jc.id
+            WHERE l.id = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $listingId);
+
+        // Do a quick if, just in case something fails while executing the statement
+        if ($stmt->execute()) {
+            $stmt->store_result();
+    
+            if ($stmt->num_rows == 1) {
+                // If one row is found, everything issa okay. Store the various data in variables.
+                $stmt->bind_result($id, $name, $description, $deadline, $published, $views, $companyId, $jobCategoryId, $jobCategoryTitle, $companyName);
+                $stmt->fetch();
+                $stmt->close();
+
+                // Return an array with all the listing information, ready to be processed however you want.
+                return array(
+                    'id' => $id,
+                    'name' => $name,
+                    'description' => $description,
+                    'deadline' => $deadline, 
+                    'published' => $published,
+                    'views' => $views,
+                    'companyId' => $companyId,
+                    'companyName' => $companyName,
+                    'jobCategoryId' => $jobCategoryId,
+                    'jobCategoryTitle' => $jobCategoryTitle,
+                );
+            } else {
+                // Return false if not found 1 row exactly. 0 rows = listing doesn't exist. More than 1 row = something's very wrong in the DB.
+                $stmt->close();
+                return false;
+            }
+        } else {
+            // Return if statement didn't execute.
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Creates a new listing and returns the new listing ID if successful. Else returns false.
+    function createNewListing($companyId) {
+        // Create a new empty listing
+        $sql = 'INSERT INTO `listing` (`company_id`) VALUES ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+
+        // If the statement executes, return the listing id. Else return false.
+        if ($stmt->execute()) {
+            $last_id = $this->conn->listingId;
+            $stmt->close();
+            return $listingId;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Updates a listing. Returns true if successful, else returns false.
+    function updateListing($listingId, $name, $description, $deadline, $jobCategoryId) {
+        $sql = 'UPDATE `job_listing` SET `name` = ?, `description` = ?, `deadline` = ?, `job_category_id` = ? WHERE `listing`.`id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('sssii', $name, $description, $deadline, $jobCategoryId, $listingId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Toggles the visibility of a listing. Returns true if successful, else returns false. 0 = only visible to company, 1 = visible to all
+    function toggleListingPublished($listingId) {
+        $sql = '
+            UPDATE `job_listing`
+            SET published = CASE
+                WHEN searchable = 0 THEN 1
+                WHEN searchable = 1 THEN 0
+            END
+            WHERE `id` = ?;
+            ';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $listingId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Sets the category of a listing. Returns true if successful, else returns false.
+    function setListingCategory($categoryId, $listingId) {
+        $sql = 'UPDATE `job_listing` SET `job_category_id` = ? WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ii', $categoryId, $listingId);
+
+        if($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+}
 ?>
