@@ -721,7 +721,7 @@ class DBHandlerListing extends DBHandlerCompany {
 
         // If the statement executes, return the listing id. Else return false.
         if ($stmt->execute()) {
-            $last_id = $this->conn->listingId;
+            $listingId = $this->conn->insert_id;
             $stmt->close();
             return $listingId;
         } else {

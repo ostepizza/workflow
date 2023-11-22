@@ -1,7 +1,12 @@
 <?php include_once '../assets/include/template.php';
 
-function display()
-{
+// Include and establish connection with DB
+include_once '../assets/include/DBHandler.php';
+ $dbhl = new DBHandlerListing();
+
+function display() {
+global $dbhl;
+
 ?>
     <!-- Content here -->
     <div class="row mt-5">
@@ -71,7 +76,33 @@ function display()
         </div>
         <div class="col-md-8">
             <!-- Start of cards representing job listings -->
-            <div class="card mb-3">
+            <?php
+           
+            if ($listings = $dbhl->getAllListings()) {
+                foreach($listings as $listing) {
+                    echo'<div class="card mb-3">
+                            <div class="card-header">
+                                A Job Title
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-10">
+                                        <h5 class="card-title">' . $listing["name"] . '</h5>
+                                        <p class="card-text">' . $listing["description"] . '</p>
+                                        <p class="card-text">' . $listing["job_category_id"] . '</p>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <a href="listing.php?id=' . $listing['id'] . '" class="btn btn-primary">Se annonse</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>';
+                }
+            } else {
+                echo"No listings";
+            }
+            ?>
+            <!--<div class="card mb-3">
                 <div class="card-header">
                     A Job Title
                 </div>
@@ -142,12 +173,11 @@ function display()
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
             <!-- End of job cards -->
         </div>
     </div>
     <!-- Content here -->
 <?php
 }
-
 makePage('display', 'Job listings');
