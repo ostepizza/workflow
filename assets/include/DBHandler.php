@@ -633,8 +633,13 @@ class DBHandlerCompany extends DBHandlerBase {
 
 class DBHandlerListing extends DBHandlerCompany {
     // Retrieves an array of published listings where the deadline hasn't passed yet. Returns false if something goes wrong.
-    function getAllListings() {
-        $sql = 'SELECT * FROM `job_listing` WHERE `published` = 1 AND `deadline` > NOW() ORDER BY `deadline` ASC';
+    function getAllActiveListings() {
+        $sql = 'SELECT jl.*, c.name as company_name, jc.title as category_title
+            FROM `job_listing` jl
+            JOIN `company` c ON jl.company_id = c.id
+            LEFT JOIN `job_category` jc ON jl.job_category_id = jc.id
+            WHERE jl.`published` = 1 AND jl.`deadline` > NOW() 
+            ORDER BY jl.`deadline` ASC';
         $stmt = $this->conn->prepare($sql);
 
         // If the statement executes, return an array with all the listings. Else return false.
