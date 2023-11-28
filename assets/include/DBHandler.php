@@ -674,10 +674,10 @@ class DBHandlerListing extends DBHandlerCompany {
     // Retrieves all listing information from a listing id. Returns an array with the listing info if successful, else returns false.
     function getListing($listingId) {
         // Select all listing info, from both the listing, company and job_category tables
-        $sql = 'SELECT l.id, l.name, l.description, l.deadline, l.published, l.views, l.company_id, l.job_category_id, jc.title as job_category_name, c.name as company_name 
+        $sql = 'SELECT l.id, l.name, l.description, l.deadline, l.published, l.views, l.company_id, l.job_category_id, jc.title as job_category_name, c.name as company_name, c.description as company_description
             FROM job_listing l
             JOIN company c ON l.company_id = c.id
-            JOIN job_category jc ON l.job_category_id = jc.id
+            LEFT JOIN job_category jc ON l.job_category_id = jc.id
             WHERE l.id = ?';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $listingId);
@@ -688,7 +688,7 @@ class DBHandlerListing extends DBHandlerCompany {
     
             if ($stmt->num_rows == 1) {
                 // If one row is found, everything issa okay. Store the various data in variables.
-                $stmt->bind_result($id, $name, $description, $deadline, $published, $views, $companyId, $jobCategoryId, $jobCategoryTitle, $companyName);
+                $stmt->bind_result($id, $name, $description, $deadline, $published, $views, $companyId, $jobCategoryId, $jobCategoryTitle, $companyName, $companyDescription);
                 $stmt->fetch();
                 $stmt->close();
 
@@ -702,6 +702,7 @@ class DBHandlerListing extends DBHandlerCompany {
                     'views' => $views,
                     'companyId' => $companyId,
                     'companyName' => $companyName,
+                    'companyDescription' => $companyDescription,
                     'jobCategoryId' => $jobCategoryId,
                     'jobCategoryTitle' => $jobCategoryTitle,
                 );

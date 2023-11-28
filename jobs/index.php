@@ -2,7 +2,7 @@
 
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
- $dbhl = new DBHandlerListing();
+$dbhl = new DBHandlerListing();
 
 function display() {
 global $dbhl;
