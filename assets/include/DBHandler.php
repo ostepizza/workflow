@@ -463,6 +463,29 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
+    // Toggles whether a company user is a superuser or not. Returns true if successful, else returns false.
+    function toggleUserSuperuser($companyId, $userId) {
+        $sql = '
+            UPDATE `company_management`
+            SET superuser = CASE
+                WHEN superuser = 0 THEN 1
+                WHEN superuser = 1 THEN 0
+            END
+            WHERE `company_id` = ? AND `user_id` = ?;
+            ';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ii', $companyId, $userId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
     /*
         Function to retrieve company name and description from a company id.
         Can be used to just check if a company with id n exists as well.
@@ -571,6 +594,7 @@ class DBHandlerCompany extends DBHandlerBase {
         return $this->updateCompanyDetailWithCompanyId($companyId, 'description', $newCompanyDescription);
     }
 
+    // Deletes a company using the company id. Returns true if successful, else returns false.
     function deleteCompanyById($companyId) {
         $sql = 'DELETE FROM `company` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -601,6 +625,19 @@ class DBHandlerCompany extends DBHandlerBase {
             } else {
                 return false;
             }
+        } else {
+            return false;
+        }
+    }
+
+    // Removes a user from a company, using the company id and the user id. Returns true if successful, else returns false.
+    function removeUserFromCompany($companyId, $userId) {
+        $sql = 'DELETE FROM `company_management` WHERE `company_id` = ? AND `user_id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ii', $companyId, $userId);
+
+        if ($stmt->execute()) {
+            return true;
         } else {
             return false;
         }
@@ -652,6 +689,70 @@ class DBHandlerListing extends DBHandlerCompany {
             $stmt->close();
             return false;
         }
+    }
+
+    // Retrieves all listings from a company id. Returns false if there are no listings or something goes wrong.
+    function getAllCompanyListings($companyId) {
+        $sql = 'SELECT jl.*, c.name as company_name, jc.title as category_title
+            FROM `job_listing` jl
+            JOIN `company` c ON jl.company_id = c.id
+            LEFT JOIN `job_category` jc ON jl.job_category_id = jc.id
+            WHERE jl.`company_id` = ? 
+            ORDER BY jl.`published` DESC, jl.`deadline` ASC';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            $listings = $result->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            return $listings;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function getTotalViews($companyId) {
+        $sql = 'SELECT SUM(views) as total_views FROM `job_listing` WHERE `company_id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $totalViews = $result->fetch_assoc()['total_views'];
+        $stmt->close();
+        return $totalViews;
+    }
+    
+    function getPublishedListingsCount($companyId) {
+        $sql = 'SELECT COUNT(*) as published_listings FROM `job_listing` WHERE `company_id` = ? AND `published` = 1';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $publishedListings = $result->fetch_assoc()['published_listings'];
+        $stmt->close();
+        return $publishedListings;
+    }
+    
+    function getUnpublishedListingsCount($companyId) {
+        $sql = 'SELECT COUNT(*) as unpublished_listings FROM `job_listing` WHERE `company_id` = ? AND `published` = 0';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $unpublishedListings = $result->fetch_assoc()['unpublished_listings'];
+        $stmt->close();
+        return $unpublishedListings;
+    }
+    
+    // Returns company statistics in an array, like number of listings, number of views, etc. Returns false if something goes wrong.
+    function getCompanyStatistics($companyId) {
+        return [
+            'total_views' => $this->getTotalViews($companyId),
+            'published_listings' => $this->getPublishedListingsCount($companyId),
+            'unpublished_listings' => $this->getUnpublishedListingsCount($companyId)
+        ];
     }
 
     // Retrieves an array of available job categories. Else returns false.
@@ -720,7 +821,7 @@ class DBHandlerListing extends DBHandlerCompany {
     // Creates a new listing and returns the new listing ID if successful. Else returns false.
     function createNewListing($companyId) {
         // Create a new empty listing
-        $sql = 'INSERT INTO `listing` (`company_id`) VALUES ?';
+        $sql = 'INSERT INTO `job_listing` (`company_id`) VALUES (?)';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $companyId);
 
