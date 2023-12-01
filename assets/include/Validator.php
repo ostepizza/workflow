@@ -20,10 +20,11 @@ class Validator {
     }
 
     // Used to validate all form inputs on the registration page
-    function validateRegistration($tosCheckmark, $email, $password, $firstName, $lastName) {
+    function validateRegistration($tosCheckmark, $email, $password, $confirmPassword, $firstName, $lastName) {
         $this->validateTosCheckmark($tosCheckmark);
         $this->validateEmail($email);
         $this->validatePasswordRegister($password);
+        $this->validatePasswordConfirm($password, $confirmPassword);
         $this->validateFirstName($firstName);
         $this->validateLastName($lastName);
     }
@@ -72,18 +73,16 @@ class Validator {
             if(!preg_match('@[0-9]@', $password)) {
                 array_push($this->feedback, 'Password does not contain a number.<br>');
                 $this->valid = false;
-                return;
             }
             if (!preg_match('@[^\w]@', $password)) {
                 array_push($this->feedback, 'Password does not contain a special character.<br>');
                 $this->valid = false;
-                return;
             }
             if (strlen($password) < 8) {
                 array_push($this->feedback, 'Password is not at least 8 characters long.<br>');
                 $this->valid = false;
-                return;
             }
+            return;
         } else {
             array_push($this->feedback, 'You need to enter a password.<br>');
             $this->valid = false;
@@ -108,6 +107,14 @@ class Validator {
             }
         } else {
             array_push($this->feedback, 'New password and confirm password do not match.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
+    function validatePasswordConfirm($password, $confirmPassword) {
+        if ($password != $confirmPassword) {
+            array_push($this->feedback, 'Password and confirm password do not match.<br>');
             $this->valid = false;
             return;
         }
