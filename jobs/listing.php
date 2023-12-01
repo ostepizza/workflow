@@ -1,8 +1,8 @@
 <?php include_once '../assets/include/template.php';
 
+// Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
 $dbhl = new DBHandlerListing();
-//Checks if the GET request is of type int
 
 function display() {
 global $dbhl;
@@ -14,9 +14,9 @@ global $dbhl;
         </div>
     </div>
     <?php
-        $test = intval($_GET["id"]);
+        $listingId = intval($_GET["id"]);
         //Checks if there is a listingid with the GET request
-        if ($listing = $dbhl->getListing($test)) {
+        if ($listing = $dbhl->getListing($listingId)) {
 
             //Checks to see if content is NULL. If it is, placeholders for job name, description, deadline, etc
             $listing['name'] = $listing['name'] ?? 'Missing job title';
@@ -41,7 +41,7 @@ global $dbhl;
                     <div class="col-md-7">
                         <h1>' . $listing["name"] . '</h1>
                         <hr>
-                        <p>' . $listing["description"] . '</p>
+                        <p>' . nl2br($listing["description"]) . '</p>
                     </div>
                     <!-- Whitespace begin -->
                     <div class="col-md-1">

@@ -698,7 +698,7 @@ class DBHandlerListing extends DBHandlerCompany {
             JOIN `company` c ON jl.company_id = c.id
             LEFT JOIN `job_category` jc ON jl.job_category_id = jc.id
             WHERE jl.`company_id` = ? 
-            ORDER BY jl.`published` DESC, jl.`deadline` ASC';
+            ORDER BY jl.`published` DESC, jl.`deadline` IS NULL ASC, jl.`deadline` ASC';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $companyId);
 
@@ -838,8 +838,8 @@ class DBHandlerListing extends DBHandlerCompany {
     }
 
     // Updates a listing. Returns true if successful, else returns false.
-    function updateListing($listingId, $name, $description, $deadline, $jobCategoryId) {
-        $sql = 'UPDATE `job_listing` SET `name` = ?, `description` = ?, `deadline` = ?, `job_category_id` = ? WHERE `listing`.`id` = ?';
+    function updateListing($listingId, $name, $description, $deadline, $jobCategoryId=NULL) {
+        $sql = 'UPDATE `job_listing` SET `name` = ?, `description` = ?, `deadline` = ?, `job_category_id` = ? WHERE `job_listing`.`id` = ?';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('sssii', $name, $description, $deadline, $jobCategoryId, $listingId);
 
@@ -858,8 +858,8 @@ class DBHandlerListing extends DBHandlerCompany {
         $sql = '
             UPDATE `job_listing`
             SET published = CASE
-                WHEN searchable = 0 THEN 1
-                WHEN searchable = 1 THEN 0
+                WHEN published = 0 THEN 1
+                WHEN published = 1 THEN 0
             END
             WHERE `id` = ?;
             ';
