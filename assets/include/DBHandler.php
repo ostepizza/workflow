@@ -675,7 +675,7 @@ class DBHandlerListing extends DBHandlerCompany {
             FROM `job_listing` jl
             JOIN `company` c ON jl.company_id = c.id
             LEFT JOIN `job_category` jc ON jl.job_category_id = jc.id
-            WHERE jl.`published` = 1 AND jl.`deadline` > NOW() 
+            WHERE jl.`published` = 1 AND DATE(jl.`deadline`) >= CURDATE()
             ORDER BY jl.`deadline` ASC';
         $stmt = $this->conn->prepare($sql);
 
@@ -863,6 +863,22 @@ class DBHandlerListing extends DBHandlerCompany {
             END
             WHERE `id` = ?;
             ';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $listingId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    // Add a view to a listing. Returns true if successful, else returns false.
+    function addListingView($listingId) {
+        $sql = 'UPDATE `job_listing` SET `views` = `views` + 1 WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $listingId);
 
