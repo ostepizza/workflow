@@ -63,8 +63,8 @@ function display() {
             </div>
 
             <div class="form-group mt-3">
-                <label for="password">Password</label>
-                <input type="password" id="confirmpassword" name="confirmPassword" class="form-control" placeholder="Enter the password again">
+                <label for="confirmPassword">Confirm password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Enter the password again">
                 <small class="form-text text-muted"></small>
             </div>
 
