@@ -5,6 +5,11 @@ include_once '../assets/include/DBHandler.php';
 $dbhu = new DBHandlerUser();
 $dbhc = new DBHandlerCompany();
 
+// Include form input validator
+include_once '../assets/include/Validator.php';
+$validator = new Validator();
+
+
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
@@ -26,10 +31,11 @@ if (isset($_GET['toggleSearchable'])) {
 
 function display() {
 global $userInfo;
+global $dbhu;
+global $validator;
 
 $userInfo['location'] = $userInfo['location'] ?? 'No location added';
 $userInfo['telephone'] = $userInfo['telephone'] ?? 'No phone added';
-$userInfo['competence'] = $userInfo['competence'] ?? 'You have not written anything about your competence.';
 $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInfo['birthday'])) : 'No birthday added';
 
 ?>
@@ -91,9 +97,32 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         </div>
         <br>
         <h2>Competence:</h2>
-        <p>
-            <?php echo $userInfo['competence']; ?>
-        </p>
+        <form action="" method="post">
+        <?php
+        if ($userInfo['competence'] !== NULL && ($userInfo["competence"] !== "")) {
+                echo'<div class="form-group">
+                        <label for="exampleFormControlTextarea1">Example textarea</label>
+                        <textarea class="form-control" name="compField" id="exampleFormControlTextarea1" rows="10">' . $userInfo["competence"] . '</textarea>
+                    </div>';
+        } else {
+            echo'<div class="form-group">
+                    <label for="exampleFormControlTextarea1">Example textarea</label>
+                    <textarea class="form-control" name="compField" id="compField" placeholder="No competence written" rows="10"></textarea>
+                </div>';
+        }
+        echo'<button type="submit" name="updateComp" class="btn btn-primary mt-2">Save</button>';
+    
+        if(isset($_POST["updateComp"])) {
+            $validator->validateCompetence($_POST["compField"]);
+            if($validator->valid) {
+                $dbhu->updateCompetence($_SESSION["user_id"], $_POST["compField"]);
+                echo"<p>Information got updated</p>";
+            } else {
+                echo"Error";
+            }
+        }
+        ?>
+        </form>
         <hr class="mb-5">
         <h2>Jobs you've applied to:</h2>
         a table
