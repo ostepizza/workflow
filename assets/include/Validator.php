@@ -20,10 +20,10 @@ class Validator {
     }
 
     // Used to validate all form inputs on the registration page
-    function validateRegistration($tosCheckmark, $email, $password, $firstName, $lastName) {
+    function validateRegistration($tosCheckmark, $email, $password, $confirmPassword, $firstName, $lastName) {
         $this->validateTosCheckmark($tosCheckmark);
         $this->validateEmail($email);
-        $this->validatePasswordRegister($password);
+        $this->validatePasswordRegister($password, $confirmPassword);
         $this->validateFirstName($firstName);
         $this->validateLastName($lastName);
     }
@@ -67,7 +67,7 @@ class Validator {
     }
 
     // Validates password input for registering/changing user password, sets $valid to false if all conditions aren't met
-    function validatePasswordRegister($password) {
+    function validatePasswordRegister($password, $confirmPassword) {
         if (!empty($password)) {
             if(!preg_match('@[0-9]@', $password)) {
                 array_push($this->feedback, 'Password does not contain a number.<br>');
@@ -84,6 +84,11 @@ class Validator {
                 $this->valid = false;
                 return;
             }
+            if($password !== $confirmPassword) {
+                array_push($this->feedback, 'Password and confirm password does not match.<br>');
+                $this->valid = false;
+                return;
+            }
         } else {
             array_push($this->feedback, 'You need to enter a password.<br>');
             $this->valid = false;
@@ -95,7 +100,7 @@ class Validator {
         if($newPassword == $confirmNewPassword) {
             if(password_verify($currentPassword, $hashedPassword)) {
                 if($currentPassword != $newPassword) {
-                    $this->validatePasswordRegister($newPassword);
+                    $this->validatePasswordRegister($newPassword, $confirmNewPassword);
                 } else {
                     array_push($this->feedback, 'Your new password can not be the same as your current password.<br>');
                     $this->valid = false;
