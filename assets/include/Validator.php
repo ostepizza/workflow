@@ -186,7 +186,7 @@ class Validator {
         Sets the valid flag to false if $fieldValue is longer than the $maxLength
     */
     function validateGenericField($fieldValue, $fieldName, $maxLength) {
-        if (strlen($fieldName) > $maxLength) {
+        if (strlen($fieldValue) > $maxLength) {
             array_push($this->feedback, $fieldName . ' can not exceed ' . $maxLength . ' characters.<br>');
             $this->valid = false;
             return;
@@ -201,6 +201,39 @@ class Validator {
     // Validates competence field, flags valid to false if it exceeds 5000 characters
     function validateCompetence($competence) {
         $this->validateGenericField($competence, 'Competence', 5000);
+    }
+
+    // Validates a job listing title, and sets valid to false if it exceeds N characters
+    function validateJobListingTitle($title) {
+        $this->validateGenericField($title, 'Title', 200);
+    }
+
+    // Validates a job listing description, and sets valid to false if it exceeds N characters
+    function validateJobListingDescription($description) {
+        $this->validateGenericField($description, 'Description', 5000);
+    }
+
+    /*
+        Based upon the validateBirthday()-method, but accepts only future dates instead.
+        Used to validate a job listing deadline, by setting valid to false if the format is wrong or date is before today
+        TODO: Refactor to a generic validateDate-method 
+    */
+    function validateJobListingDeadline($date) {
+        if ($date == '') {
+            // If the field is empty, it's valid as the user hasn't entered a date or wants to remove it. Just return.
+            return;
+        } else if (!preg_match("/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/", $date)) {
+            // If the date doesn't follow the format YYYY-MM-DD, it's not valid. Flag false and return. 
+            // (Certain dates are unaccounted for, like february 31st, which doesn't exist)
+            array_push($this->feedback, 'Date is not in a valid format.<br>');
+            $this->valid = false;
+            return;
+        } else if (strtotime($date) < strtotime(date('Y-m-d'))  ) {
+            // If the date is after today, flag false and return.
+            array_push($this->feedback, 'Date can not be before today.<br>');
+            $this->valid = false;
+            return;
+        }
     }
 
     // Validates a company name, and sets valid to false if it's empty or above 100 characters aren't met

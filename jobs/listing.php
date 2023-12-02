@@ -1,28 +1,57 @@
-<?php
-include_once '../assets/include/template.php';
+<?php include_once '../assets/include/template.php';
 
-function display()
-{
+// Include and establish connection with DB
+include_once '../assets/include/DBHandler.php';
+$dbhc = new DBHandlerCompany();
+$dbhl = new DBHandlerListing();
+
+$listingId = intval($_GET["id"]);
+$listing = $dbhl->getListing($listingId);
+
+if(($listing['published'] == 0) && ($dbhc->getCompanyIdFromUserId($_SESSION['user_id']) != $listing['companyId'])) {
+    // Redirect if listing isn't published, and user is not a part of the company that owns the listing
+    header('Location: ../403.php');
+    exit();
+} else if (($listing['published'] == 1)) {
+    // If the listing is published, add a view to the listing
+    $dbhl->addListingView($listingId);
+}
+
+function display() {
+global $listing;
 ?>
-    <!-- Content here -->
     <div class="row mt-4">
         <!-- Headline of the job listing -->
         <div class="col-md-8">
-        <button class="btn btn-secondary">Go back to job listings</button>
-            <!-- Add management buttons if it belongs to a company user is a part of-->
+        <a class="btn btn-secondary" href="index.php">Go back to job listings</a>
         </div>
     </div>
-    <!-- Job name description -->
-    <div class="row mt-5">
+    <?php
+    //Checks to see if content is NULL. If it is, placeholders for job name, description, deadline, etc
+    $listing['name'] = $listing['name'] ?? 'Missing job title';
+    $listing['description'] = $listing["description"] ?? "No information about current job listing";
+
+    $listing["companyName"] = $listing["companyName"] ?? "Missing company name";
+    $listing["companyDescription"] = $listing["companyDescription"] ?? "Missing company description";
+    
+    if ($listing["jobCategoryTitle"] == NULL) {
+        $listing["jobCategoryTitle"] = 'No category';
+    } else {
+        $listing["jobCategoryTitle"] = 'Category: ' . $listing['jobCategoryTitle'];
+    }
+
+    if ($listing['deadline'] == NULL) {
+        $listing['deadline'] = 'No deadline';
+    } else {
+        $listing['deadline'] = 'Apply before ' . date('d. M Y', strtotime($listing['deadline']));
+    }
+    
+    echo'
+        <div class="row mt-5">
         <div class="col-md-7">
-            <h4>Job description</h4>
+            <h1>' . $listing["name"] . '</h1>
             <hr>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum mollis augue non nisi faucibus, a tempor quam venenatis. Nullam nec porta ligula. Ut fringilla turpis at elit tincidunt tempor. Nulla at venenatis justo. Fusce rhoncus vestibulum nunc placerat accumsan. Nullam mattis velit porttitor lorem luctus posuere. Praesent ac nunc eu erat elementum euismod viverra in magna. Phasellus congue ex quis augue iaculis, quis fringilla mauris elementum. Nam tristique massa a arcu ultricies placerat. Proin enim arcu, blandit id lectus fringilla, volutpat congue lorem.
-
-                In scelerisque laoreet lorem, nec blandit odio commodo in. Ut non purus purus. Vestibulum tristique sollicitudin dignissim. Duis dictum, orci sed iaculis lobortis, quam orci eleifend felis, ac convallis tortor nunc non diam. Donec eu lacinia ipsum. Sed euismod varius felis, id scelerisque nibh ornare euismod. Aliquam non mattis ante. Nam eleifend quam venenatis lacus malesuada dapibus. Vestibulum in justo vel nisi commodo eleifend nec at sapien. Curabitur at ornare ex. Sed nec dui libero. Cras ac commodo metus. Aenean non libero laoreet eros porta suscipit. Donec rutrum, ligula elementum auctor molestie, mauris justo vestibulum urna, dignissim luctus ipsum neque a neque.
-
-                Cras molestie erat mauris, eu cursus libero sodales a. Mauris risus massa, sodales eu finibus at, fermentum consequat mi. Donec pellentesque purus quis dolor iaculis finibus. Nullam ac magna posuere lorem consectetur vehicula ut sed felis. Nulla a consequat sapien. Curabitur mi ante, vestibulum vel accumsan lacinia, malesuada rutrum odio. Mauris consequat dui eu consectetur ultricies. Fusce sed tincidunt eros. Nam mollis dapibus ipsum, at cursus nunc. Pellentesque id nibh at turpis egestas lobortis a sed magna. Phasellus felis ligula, facilisis eu tempor vitae, tempus at sapien. Pellentesque eleifend et libero non feugiat. Aliquam a viverra enim, non porta massa. Proin vel pulvinar est.</p>
-
+            <p>' . nl2br($listing["description"]) . '</p>
         </div>
         <!-- Whitespace begin -->
         <div class="col-md-1">
@@ -34,29 +63,23 @@ function display()
                     About employer
                 </div>
                 <div class="card-body text-center">
-                    <h5 class="card-title">Big buisness</h5>
-                    <p>We here to do big bizniz</p>
-                    <p class="card-text">Frontend Developer</p>
+                    <h5 class="card-title">'. $listing["companyName"] .'</h5>
+                    <p>' . $listing["companyDescription"] . '</p>
                     <hr>
-                    <p class="card-text">Deadline: 11.11.2011</p>
-                    <p class="card-text">Categories: ???</p>
+                    <b class="card-text">' . $listing["deadline"] . '</b>
+                    <p class="card-text">' . $listing["jobCategoryTitle"] . '</p>
                     <hr>
 
                     <div class="col-md-4 mx-auto">
-                        <button class="btn btn-primary">Apply for job</button>
+                        <a class="btn btn-primary" href="application.php?companyId=' . $listing['companyId'] . '">Apply for job</a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-
-    <div class="row mt-5">
-        <div class="col-md-2">
-            <p>Published date: 11.11.2011</p>
-        </div>
-
+    </div>';
+        
+    ?>
 <?php
-}
 
+}
 makePage('display', 'Job listing');

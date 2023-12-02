@@ -9,8 +9,10 @@ $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
 // Retrieve the users info
-$userInfo = $dbhu->selectAllUserInfoByUserId($_SESSION['user_id']);
-$userInfo = array_merge($userInfo, $dbhc->getCompanyDetailsFromUserId($_SESSION['user_id']));
+if(!empty($_SESSION['user_id'])) {
+    $userInfo = $dbhu->selectAllUserInfoByUserId($_SESSION['user_id']);
+    $userInfo = array_merge($userInfo, $dbhc->getCompanyDetailsFromUserId($_SESSION['user_id']));
+}
 
 if (isset($_GET['toggleSearchable'])) {
     $dbhu->toggleSearchable($_SESSION['user_id']);

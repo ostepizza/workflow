@@ -1,7 +1,27 @@
 <?php include_once '../assets/include/template.php';
 
-function display()
-{
+// Include and establish connection with DB
+include_once '../assets/include/DBHandler.php';
+$dbhl = new DBHandlerListing();
+
+// Retrieve all categories from the database
+$categories = $dbhl->getAllCategories();
+
+// Retrieve listings from the database, based on the search filter (or show all listings if no filter is set)
+if (isset($_POST['search'])) {
+    if (isset($_POST['categories'])) {
+        $selectedCategories = $_POST['categories'];
+    } else {
+        $selectedCategories = array();
+    }
+    $listings = $dbhl->searchListings($_POST['filterWord'], $selectedCategories);
+} else {
+    $listings = $dbhl->getAllActiveListings();
+}
+
+function display() {
+global $listings, $categories;
+
 ?>
     <!-- Content here -->
     <div class="row mt-5">
@@ -19,50 +39,30 @@ function display()
                     <span class="h5">Filter</span>
                 </div>
                 <div class="card-body">
-                    <div class="form-group">
-                        <label for="exampleInputPassword1">Filter by words</label>
-                        <input type="search" class="form-control" id="" placeholder="">
-                    </div>
-                    <hr>
+                    <form action="" method="post">
+                        <div class="form-group">
+                            <label for="filterWord">Filter by words</label>
+                            <input type="search" class="form-control" id="filterWord" name="filterWord">
+                        </div>
+                        <hr>
 
-                    <p>Filter by category:</p>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Technology
-                        </label>
-                    </div>
+                        <p>Filter by category:</p>
+                        <?php
+                        foreach($categories as $category) {
+                            echo '
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="categories[]" value="' . $category['id'] . '" id="' . $category['title'] . '">
+                                <label class="form-check-label" for="' . $category['title'] . '">
+                                    ' . $category['title'] . '
+                                </label>
+                            </div>
+                            ';
+                        }
+                        ?>
 
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Construction
-                        </label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Something idk
-                        </label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Something idk
-                        </label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Something idk
-                        </label>
-                    </div>
-
-                    <hr>
-                    <button class="btn btn-primary">Search for jobs</button>
+                        <hr>
+                        <button type="submit" id="search" name="search" class="btn btn-primary">Search for jobs</button>
+                    </form>
                 </div>
             </div>
             <!-- End of filter box -->
@@ -71,83 +71,56 @@ function display()
         </div>
         <div class="col-md-8">
             <!-- Start of cards representing job listings -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    A Job Title
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-10">
-                            <h5 class="card-title">Chalk</h5>
-                            <p class="card-text">Konsulent.</p>
-                            <p class="card-text">IT-Bransjen</p>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary">Se annonse</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-header">
-                    A Job Title
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-10">
-                            <h5 class="card-title">Selvskap A</h5>
-                            <p class="card-text">Frontend Utvikler.</p>
-                            <p class="card-text">IT og utvikling</p>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary">Se annonse</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="card mb-3">
-                <div class="card-header">
-                    A Job Title
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-10">
-                            <h5 class="card-title">Selvskap B</h5>
-                            <p class="card-text">Frontend Utvikler.</p>
-                            <p class="card-text">Job catagory</p>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary">Se annonse</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-header">
-                    A Job Title
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-10">
-                            <h5 class="card-title">Selvskap C</h5>
-                            <p class="card-text">UI/UX designer og tester.</p>
-                            <p class="card-text">UX</p>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary">Se annonse</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- End of job cards -->
+            <?php
+            if (count($listings) > 0) {
+                // Loop through all listings and display them, if there are any
+                foreach($listings as $listing) {
+                    // Prepare for absolutely horrible echos
+                    echo '<div class="card mb-3">
+                            <div class="card-header">
+                                <span class="h5">
+                                    ' . $listing["name"];
+                                    if ($listing['job_category_id'] != null) {
+                                        echo ' <span class="badge bg-secondary">' . $listing["category_title"] . '</span>';
+                                    }
+                    echo        '</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <p class="card-text">
+                                            ';
+                                            if (strlen($listing["description"]) > 250) {
+                                                echo substr($listing["description"], 0, 250) . '...';
+                                            } else {
+                                                echo $listing["description"];
+                                            }   
+                    echo '                   
+                                        </p>
+                                        <a class="btn btn-primary stretched-link" href="listing.php?id=' . $listing['id'] . '">Read more</a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p>
+                                            Apply before<br>
+                                            <b>' . date("D d. M. Y", strtotime($listing["deadline"])) . '</b>
+                                        </p>
+                                        <p>
+                                            Posted by<br>
+                                            <b>' . $listing["company_name"] . '</b> 
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>';
+                }
+            } else {
+                // Display a message if there are no listings
+                echo '<p><span class="h2">There are no job listings matching the criteria available.</span></p>';
+            }
+            ?>
         </div>
     </div>
     <!-- Content here -->
 <?php
 }
-
 makePage('display', 'Job listings');
