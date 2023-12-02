@@ -4,8 +4,23 @@
 include_once '../assets/include/DBHandler.php';
 $dbhl = new DBHandlerListing();
 
+// Retrieve all categories from the database
+$categories = $dbhl->getAllCategories();
+
+// Retrieve listings from the database, based on the search filter (or show all listings if no filter is set)
+if (isset($_POST['search'])) {
+    if (isset($_POST['categories'])) {
+        $selectedCategories = $_POST['categories'];
+    } else {
+        $selectedCategories = array();
+    }
+    $listings = $dbhl->searchListings($_POST['filterWord'], $selectedCategories);
+} else {
+    $listings = $dbhl->getAllActiveListings();
+}
+
 function display() {
-global $dbhl;
+global $listings, $categories;
 
 ?>
     <!-- Content here -->
@@ -24,50 +39,30 @@ global $dbhl;
                     <span class="h5">Filter</span>
                 </div>
                 <div class="card-body">
-                    <div class="form-group">
-                        <label for="exampleInputPassword1">Filter by words</label>
-                        <input type="search" class="form-control" id="" placeholder="">
-                    </div>
-                    <hr>
+                    <form action="" method="post">
+                        <div class="form-group">
+                            <label for="filterWord">Filter by words</label>
+                            <input type="search" class="form-control" id="filterWord" name="filterWord">
+                        </div>
+                        <hr>
 
-                    <p>Filter by category:</p>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Technology
-                        </label>
-                    </div>
+                        <p>Filter by category:</p>
+                        <?php
+                        foreach($categories as $category) {
+                            echo '
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="categories[]" value="' . $category['id'] . '" id="' . $category['title'] . '">
+                                <label class="form-check-label" for="' . $category['title'] . '">
+                                    ' . $category['title'] . '
+                                </label>
+                            </div>
+                            ';
+                        }
+                        ?>
 
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Construction
-                        </label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Something idk
-                        </label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Something idk
-                        </label>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Something idk
-                        </label>
-                    </div>
-
-                    <hr>
-                    <button class="btn btn-primary">Search for jobs</button>
+                        <hr>
+                        <button type="submit" id="search" name="search" class="btn btn-primary">Search for jobs</button>
+                    </form>
                 </div>
             </div>
             <!-- End of filter box -->
@@ -77,9 +72,7 @@ global $dbhl;
         <div class="col-md-8">
             <!-- Start of cards representing job listings -->
             <?php
-           
-            // Retrieve all listings from the database and assign them to $listings
-            if ($listings = $dbhl->getAllActiveListings()) {
+            if (count($listings) > 0) {
                 // Loop through all listings and display them, if there are any
                 foreach($listings as $listing) {
                     // Prepare for absolutely horrible echos
@@ -122,7 +115,7 @@ global $dbhl;
                 }
             } else {
                 // Display a message if there are no listings
-                echo '<p><span class="h2">There are currently no job listings available</span></p>';
+                echo '<p><span class="h2">There are no job listings matching the criteria available.</span></p>';
             }
             ?>
         </div>

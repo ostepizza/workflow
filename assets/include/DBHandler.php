@@ -713,6 +713,46 @@ class DBHandlerListing extends DBHandlerCompany {
         }
     }
 
+    // Searches for listings matching a filter word and an array of category IDs. Returns false if something goes wrong.
+    function searchListings($filterWord, $categoryIds) {
+        // Add % to the beginning and end of the filter word, so it can match words that contain the filter word
+        $filterWord = "%" . $filterWord . "%";
+
+        // Check if the categoryIds array is empty
+        if(empty($categoryIds)) {
+            // If it is, modify the SQL query to not include the IN clause
+            $sql = "SELECT jl.*, c.name as company_name, jc.title as category_title
+                    FROM `job_listing` jl
+                    JOIN `company` c ON jl.company_id = c.id
+                    LEFT JOIN `job_category` jc ON jl.job_category_id = jc.id
+                    WHERE jl.`name` LIKE ? AND jl.`published` = 1 AND DATE(jl.`deadline`) >= CURDATE()
+                    ORDER BY jl.`deadline` ASC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param('s', $filterWord);
+        } else {
+            // If it's not, generate placeholders for each category ID and include the IN clause in the SQL query
+            $placeholders = implode(',', array_fill(0, count($categoryIds), '?'));
+            $sql = "SELECT jl.*, c.name as company_name, jc.title as category_title
+                    FROM `job_listing` jl
+                    JOIN `company` c ON jl.company_id = c.id
+                    LEFT JOIN `job_category` jc ON jl.job_category_id = jc.id
+                    WHERE jl.`name` LIKE ? AND jl.`job_category_id` IN ($placeholders) AND jl.`published` = 1 AND DATE(jl.`deadline`) >= CURDATE()
+                    ORDER BY jl.`deadline` ASC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param(str_repeat('s', count($categoryIds) + 1), $filterWord, ...$categoryIds);
+        }
+
+        if($stmt->execute()) {
+            $result = $stmt->get_result();
+            $listings = $result->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            return $listings;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
     function getTotalViews($companyId) {
         $sql = 'SELECT SUM(views) as total_views FROM `job_listing` WHERE `company_id` = ?';
         $stmt = $this->conn->prepare($sql);
