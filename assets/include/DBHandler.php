@@ -757,7 +757,7 @@ class DBHandlerListing extends DBHandlerCompany {
 
     // Retrieves an array of available job categories. Else returns false.
     function getAllCategories() {
-        $sql = 'SELECT * FROM `job_category`';
+        $sql = 'SELECT * FROM `job_category` ORDER BY `title` ASC';
         $stmt = $this->conn->prepare($sql);
 
         // If the statement executes, return an array with all the available categories. Else return false.
@@ -901,6 +901,26 @@ class DBHandlerListing extends DBHandlerCompany {
         if($stmt->execute()) {
             $stmt->close();
             return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function checkCategoryId($categoryId) {
+        $sql = 'SELECT * FROM `job_category` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $categoryId);
+
+        if($stmt->execute()) {
+            $stmt->store_result();
+            if ($stmt->num_rows == 1) {
+                $stmt->close();
+                return true;
+            } else {
+                $stmt->close();
+                return false;
+            }
         } else {
             $stmt->close();
             return false;

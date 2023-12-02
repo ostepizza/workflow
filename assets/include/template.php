@@ -13,7 +13,7 @@ if (($requireLogin && empty($_SESSION['user_id'])) || ($requireNoUser && !empty(
 
 echo '
 <!doctype html>
-<html>
+<html style="overflow-y: scroll;">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

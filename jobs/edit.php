@@ -13,9 +13,13 @@ $validator = new Validator();
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
-// Retrieve a listing from the database, based on the id in the GET request
+// Retrieve a listing and all categories from the database, based on the id in the GET request
 $listingId = intval($_GET["id"]);
 $listing = $dbhl->getListing($listingId);
+$categories = $dbhl->getAllCategories();
+
+// Array to store the failed listing input (currently not in use). Used to repopulate the form with the failed input
+$listingFailed = array();
 
 // Redirect the user if they are not a part of the company that owns the listing
 if($dbhc->getCompanyIdFromUserId($_SESSION['user_id']) != $listing['companyId']) {
@@ -41,9 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $validator->validateJobListingDeadline($_POST['deadline']);
 
     if($validator->valid) {
-        // If the form validation succeeded, update the listing
+        // Check if selected category exists
+        if ($dbhl->checkCategoryId($_POST['category'])) {
+            $categoryId = $_POST['category'];
+        } else {
+            $categoryId = NULL;
+        }
 
-        if ($dbhl->updateListing($listingId, $_POST['title'], $_POST['description'], $_POST['deadline'])) {
+        // If the form validation succeeded, update the listing
+        if ($dbhl->updateListing($listingId, $_POST['title'], $_POST['description'], $_POST['deadline'], $categoryId)) {
             // If the listing was successfully updated, tell the user. This is only needed IF it fails to publish
             $feedbackForUser = 'Successfully updated listing.<br>';
             $feedbackColor = 'success';
@@ -68,11 +78,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         // If the form validation failed, tell the user what went wrong.
         $feedbackForUser = $validator->printAllFeedback();
+        $feedbackColor = 'danger';
+        foreach ($_POST as $key => $value) {
+            $listingFailed[$key] = $value;
+        }
     }
 }
 
+// Debugging
+//if (!empty($listingFailed)) {
+//    print_r($listingFailed);
+//}
+
 function display() {
-global $listing;
+global $listing, $categories;
 
 ?>
 <!-- Content here -->
@@ -99,20 +118,37 @@ global $listing;
 
                 <div class="form-group mb-3">
                     <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" name="description" id="description" rows="3" placeholder="Please enter a description"><?php if(!empty($listing['description'])) { echo $listing['description'];} ?></textarea>
+                    <textarea class="form-control" name="description" id="description" rows="12" placeholder="Please enter a description"><?php if(!empty($listing['description'])) { echo $listing['description'];} ?></textarea>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="deadline">Deadline to apply</label><br>
-                    <input type="date" id="deadline" name="deadline" 
-                    <?php
-                        if(!empty($listing['deadline'])){
-                            echo 'value="' . $listing['deadline'] . '"';
-                        } else {
-                            echo 'value="' . date("Y-m-d") . '"';
-                        } 
-                    ?>
-                    /><br>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="deadline">Deadline to apply</label><br>
+                            <input type="date" id="deadline" name="deadline" 
+                            <?php
+                                if(!empty($listing['deadline'])){
+                                    echo 'value="' . $listing['deadline'] . '"';
+                                } else {
+                                    echo 'value="' . date("Y-m-d") . '"';
+                                } 
+                            ?>
+                            /><br>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="category">Category</label><br>
+                            <select id="category" name="category">
+                                <option value="">-None-</option>
+                                <?php
+                                foreach ($categories as $category) {
+                                    $selected = ($listing['jobCategoryId'] == $category['id']) ? 'selected' : '';
+                                    echo '<option value="' . $category['id'] . '"' . $selected . '>' . $category['title'] . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    
                 </div>
 
                 <button type="submit" id="submitSave" name="submitSave" class="btn btn-primary mt-3 mb-3">Save listing</button>
@@ -140,6 +176,8 @@ global $listing;
                 <b>Deadline</b><br>
                 The deadline for the job listing. This will be the last day the user can apply for the job.<br>
                 <br>
+                <b>Category</b><br>
+                The category of the job listing. This will be used to sort and categorize the job listing.<br>
             </p>
         </div>
     
