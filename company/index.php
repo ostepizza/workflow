@@ -21,6 +21,9 @@ if(!empty($_GET)){
     } else if (isset($_GET['registerSuccess'])) {
         $getMsg = 'Company successfully registered.';
         $getMsgColor = 'success';
+    } else if (isset($_GET['deletedListing'])) {
+        $getMsg = 'Listing has been deleted.';
+        $getMsgColor = 'danger';
     }
     echo('<div class="alert alert-' . $getMsgColor . ' mt-3" role="alert">' . $getMsg . '</div>');  
 }

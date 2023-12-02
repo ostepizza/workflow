@@ -89,13 +89,13 @@ global $listings, $categories;
                                 <div class="row">
                                     <div class="col-md-9">
                                         <p class="card-text">
-                                            <i>';
-                                                if (strlen($listing["description"]) > 250) {
-                                                    echo substr($listing["description"], 0, 250) . '...';
-                                                } else {
-                                                    echo $listing["description"];
-                                                }   
-                    echo '                  </i> 
+                                            ';
+                                            if (strlen($listing["description"]) > 250) {
+                                                echo substr($listing["description"], 0, 250) . '...';
+                                            } else {
+                                                echo $listing["description"];
+                                            }   
+                    echo '                   
                                         </p>
                                         <a class="btn btn-primary stretched-link" href="listing.php?id=' . $listing['id'] . '">Read more</a>
                                     </div>

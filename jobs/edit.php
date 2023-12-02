@@ -37,9 +37,17 @@ if (isset($_GET['toggledVisibility'])) {
     $feedbackColor = 'success';
 }
 
-// If a post request is sent, validate the input and update the listing
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Validate the job listing input
+// Check first if the listing should be deleted
+if (isset($_POST['deleteListing'])) {
+    if ($dbhl->deleteListing($listingId)) {
+        header('Location: ../company/index.php?deletedListing');
+        exit();
+    } else {
+        $feedbackForUser = 'Failed to delete listing.';
+        $feedbackColor = 'danger';
+    }
+} else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Else, if any other post request is sent, validate the input and update the listing
     $validator->validateJobListingTitle($_POST['title']);
     $validator->validateJobListingDescription($_POST['description']);
     $validator->validateJobListingDeadline($_POST['deadline']);
@@ -154,11 +162,12 @@ global $listing, $categories;
                 <button type="submit" id="submitSave" name="submitSave" class="btn btn-primary mt-3 mb-3">Save listing</button>
                 <?php 
                     if ($listing['published'] == 1) {
-                        echo '<button type="submit" id="submitPublish" name="submitPublish" class="btn btn-danger mt-3 mb-3">Save and unpublish listing</button>';
+                        echo '<button type="submit" id="submitPublish" name="submitPublish" class="btn btn-warning mt-3 mb-3">Save and unpublish listing</button>';
                     } else {
                         echo '<button type="submit" id="submitPublish" name="submitPublish" class="btn btn-success mt-3 mb-3">Save and publish listing</button>';
                     }
                 ?>
+                <a href="#" data-bs-toggle="modal" data-bs-target=".modalDeleteListing"><button type="button" class="btn btn-danger">Delete listing</button></a>
             </form>
         </div>
 
@@ -181,6 +190,28 @@ global $listing, $categories;
             </p>
         </div>
     
+</div>
+
+<div class="modal fade modalDeleteListing" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete listing</h5>
+            </div>
+            <div class="modal-body">
+                <p><span class="text-danger"><b>WARNING! This is a destructive action!</b></span></p>
+                <p>By proceeding, the current listing will be deleted. With this action, all user submitted job applications related to this listing will also be deleted. This action <b>CAN NOT BE REVERSED.</b></p>
+            </div>
+            <div class="modal-footer">
+                <form action="" method="post" class="row row-cols-lg-auto align-items-center">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-danger" name="deleteListing">Delete</button>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
 </div>
 <?php
 

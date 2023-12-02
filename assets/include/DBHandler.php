@@ -893,6 +893,22 @@ class DBHandlerListing extends DBHandlerCompany {
         }
     }
 
+    // Deletes a listing. Returns true if successful, else returns false.
+    function deleteListing($listingId) {
+        $sql = 'DELETE FROM `job_listing` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $listingId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
     // Toggles the visibility of a listing. Returns true if successful, else returns false. 0 = only visible to company, 1 = visible to all
     function toggleListingPublished($listingId) {
         $sql = '
