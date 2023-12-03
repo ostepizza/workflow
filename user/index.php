@@ -20,19 +20,34 @@ $userInfo = array_merge($userInfo, $dbhc->getCompanyDetailsFromUserId($_SESSION[
 if (isset($_GET['toggleSearchable'])) {
     $dbhu->toggleSearchable($_SESSION['user_id']);
     header('Location: index.php?updatedSearchable');
-} if (isset($_GET['updatedSearchable'])) {
-    if($userInfo['searchable']) {
+} else if (isset($_GET['updatedSearchable'])) {
+    if ($userInfo['searchable']) {
         $feedbackForUser = 'You are now searchable to employers.';
         $feedbackColor = 'success';
     } else {
         $feedbackForUser = 'You are no longer searchable to employers.';
     }
+} else if (isset($_GET["updatedCompetence"])) {
+    $feedbackForUser = 'Your competence has been updated';
+    $feedbackColor  = 'success';
+}
+
+if(isset($_POST["updateComp"])) {
+    $validator->validateCompetence($_POST["compField"]);
+    if ($validator->valid) {
+        if ($dbhu->updateCompetence($_SESSION["user_id"], $_POST["compField"])) {
+            header('Location: index.php?updatedCompetence');
+            exit();
+        }
+    } else {
+         // If the form validation failed, tell the user what went wrong.
+         $feedbackForUser = $validator->printAllFeedback();
+         $feedbackColor = 'danger';
+    }
 }
 
 function display() {
 global $userInfo;
-global $dbhu;
-global $validator;
 
 $userInfo['location'] = $userInfo['location'] ?? 'No location added';
 $userInfo['telephone'] = $userInfo['telephone'] ?? 'No phone added';
@@ -98,30 +113,17 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         <br>
         <h2>Competence:</h2>
         <form action="" method="post">
-        <?php
-        if ($userInfo['competence'] !== NULL && ($userInfo["competence"] !== "")) {
-                echo'<div class="form-group">
-                        <label for="exampleFormControlTextarea1">Example textarea</label>
-                        <textarea class="form-control" name="compField" id="exampleFormControlTextarea1" rows="10">' . $userInfo["competence"] . '</textarea>
-                    </div>';
-        } else {
-            echo'<div class="form-group">
-                    <label for="exampleFormControlTextarea1">Example textarea</label>
-                    <textarea class="form-control" name="compField" id="compField" placeholder="No competence written" rows="10"></textarea>
-                </div>';
-        }
-        echo'<button type="submit" name="updateComp" class="btn btn-primary mt-2">Save</button>';
+        <div class="form-group">
+            <textarea class="form-control" name="compField" rows="10"><?php if($userInfo["competence"] !== NULL) { echo $userInfo["competence"]; } ?></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-11">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" name="updateComp" class="btn btn-primary mt-2">Save</button>
+            </div>
+        </div>
     
-        if(isset($_POST["updateComp"])) {
-            $validator->validateCompetence($_POST["compField"]);
-            if($validator->valid) {
-                $dbhu->updateCompetence($_SESSION["user_id"], $_POST["compField"]);
-                echo"<p>Information got updated</p>";
-            } else {
-                echo"Error";
-            }
-        }
-        ?>
         </form>
         <hr class="mb-5">
         <h2>Jobs you've applied to:</h2>
