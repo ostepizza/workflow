@@ -93,7 +93,7 @@ function display() {
 global $userInfo;
 ?>
 <!-- Content here -->
-<a href="index.php" class="btn btn-secondary active mt-5" role="button">Back to profile</a><br>
+<a href="index.php" class="btn btn-secondary mt-5" role="button">Back to profile</a><br>
 <div class="row mt-3">
     <div class="col-md-7">
         <h2>Edit profile details</h2>
