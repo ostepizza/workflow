@@ -9,6 +9,7 @@ function display() {
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
 $dbhc = new DBHandlerCompany();
+$dbhl = new DBHandlerListing();
 
 // If the page is loaded with a get request, display a message depending on the request
 if(!empty($_GET)){
@@ -20,50 +21,97 @@ if(!empty($_GET)){
     } else if (isset($_GET['registerSuccess'])) {
         $getMsg = 'Company successfully registered.';
         $getMsgColor = 'success';
+    } else if (isset($_GET['deletedListing'])) {
+        $getMsg = 'Listing has been deleted.';
+        $getMsgColor = 'danger';
     }
     echo('<div class="alert alert-' . $getMsgColor . ' mt-3" role="alert">' . $getMsg . '</div>');  
 }
 
 // Check if the user is a part of a company
 if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
-    // If member is in a company, retrieve company data
+    // If member is in a company, retrieve  and set company data
     $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
+
+    // Set some shorthands for name and description
     $companyName = $companyDetails['companyName'];
     $companyDescription = $companyDetails['companyDescription'];
 
-    // TODO: Here, retrieve statistics about job listings etc for display in the dashboard
+    // Retrieve all listings for company
+    $listings = $dbhl->getAllCompanyListings($companyId);
+
+    // Retrieve listing statistics for company 
+    $statistics = $dbhl->getCompanyStatistics($companyId);
 
     // Display the company dashboard:
-    echo '
+?>
     <div class="row mt-5">
         <div class="col-md-12">
-            <h1>' . $companyName . ' - Company dashboard</h1>
-            <p>' . $companyDescription . '</p>
+            <?php
+            echo '<h1>' . $companyName . ' - Company dashboard</h1>';
+            echo '<p>' . $companyDescription . '</p>';
+            ?>
         </div>
     </div>
     <div class="row mt-5">
         <div class="col-md-7">
-            <h2>Active job listings (Amount):</h2>
-            <!-- TBD: sorted by deadline -->
-            <hr>
-            <div class="card">
-                <div class="card-header">
-                    Job listing title (X views)
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <p>X applications received.</p>
-                            <p>Deadline X-date</p>
-                            <p>This listing was published X-date</p>
+            <?php
+            echo '<h2>Job listings ('.count($listings).'):</h2><hr>';
+            if ($listings) {
+                foreach($listings as $listing) {
+                    $listing['name'] = $listing['name'] ?? 'No title';
+    
+                    $listing['description'] = $listing['description'] ?? '<i>This listing has no description</i>';
+                    if (strlen($listing["description"]) > 250) {
+                        $listing['description'] = substr($listing['description'], 0, 250) . '...';
+                    }
+    
+                    if ($listing['deadline'] == NULL) {
+                        $listing['deadline'] = 'No deadline';
+                    } else {
+                        $listing['deadline'] = 'Apply before ' . date('d. M Y', strtotime($listing['deadline']));
+                    }
+    
+                    $listing['published'] = $listing['published'] == 1 ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-danger">Unpublished</span>';
+    
+                    $listing['category_title'] = $listing['category_title'] ?? 'No category';
+    
+                    echo '
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <b>' . $listing['name'] . '</b> ('.$listing['views'].' views)
+                                </div>
+                                <div class="col-md-3">
+                                    <p class="text-end mb-0">' . $listing['published'] . '</p>
+                                </div>
+                            </div>
+                            
                         </div>
-                        <div class="col-md-3">
-                            <a href="#"><button type="button" class="btn btn-primary w-100">View applications</button></a>
-                            <a href="#"><button type="button" class="btn btn-secondary w-100 mt-2">View listing</button></a>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <p>'.$listing['description'].'</p>
+                                    <hr>
+                                    ' . $listing['deadline'] . '<br>
+                                    ' . $listing['category_title'] . '
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="#"><button type="button" class="btn btn-primary w-100">View applications</button></a>
+                                    <a href="../jobs/edit.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Edit listing</button></a>
+                                    <a href="../jobs/listing.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Preview listing</button></a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                    ';
+                }
+            } else {
+                echo '<p>There are no job listings.</p>';
+            }
+            
+            ?>
         </div>
 
         <div class="col-md-1">
@@ -82,15 +130,18 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                 <h2>Statistics</h2>
                 <hr>
                 <p>
-                    Total listings: X<br>
-                    Total applications received: X<br>
+                    <?php
+                    echo 'Published listings: ' . $statistics['published_listings'] . '<br>';
+                    echo 'Unpublished listings: ' . $statistics['unpublished_listings'] . '<br>';
+                    echo 'Total views: ' . $statistics['total_views'] . '<br>';
+                    ?>
                 </p>
             </div>
         </div>
     </div>
-    ';
+<?php
 } else {
-    // If not part of a company
+    // If not part of a company, show an alternate dashboard
     echo '
     <div class="row mt-5">
         <div class="col-md-12">
@@ -106,4 +157,4 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
 <?php
 }
 
-makePage('display', 'Companies', requireLogin: true);
+makePage('display', 'Company dashboard', requireLogin: true);

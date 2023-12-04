@@ -6,7 +6,7 @@ $validator = new Validator();
 if (isset($_POST['submit'])) {
     $tos = (isset($_POST['acceptToS'])) ? $_POST['acceptToS'] : false;
 
-    $validator->validateRegistration($tos, $_POST['email'], $_POST['password'], $_POST['firstName'], $_POST['lastName']);
+    $validator->validateRegistration($tos, $_POST['email'], $_POST['password'], $_POST['confirmPassword'], $_POST['firstName'], $_POST['lastName']);
 
     if($validator->valid) {
         echo 'true, proceed';
@@ -26,6 +26,12 @@ if (isset($_POST['submit'])) {
         <label for="password">Password</label>
         <input type="password" id="password" name="password" class="form-control" placeholder="Enter your desired password">
         <small class="form-text text-muted">Must be at least 8 characters long, and contain at least 1 number and 1 special character</small>
+    </div>
+
+    <div class="form-group mt-3">
+        <label for="password">Confirm password</label>
+        <input type="password" id="password" name="confirmPassword" class="form-control" placeholder="Confirm your password">
+        <small class="form-text text-muted"></small>
     </div>
 
     <div class="form-group mt-3">

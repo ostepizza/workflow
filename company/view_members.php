@@ -47,6 +47,43 @@ if ($dbhc->isUserCompanySuperuser($_SESSION['user_id'])) {
             $feedbackForUser = $validator->printAllFeedback();
         }
     }
+
+    // Handle the toggle admin and remove user forms
+    if (isset($_POST['user_id']) && isset($_POST['action'])) {
+        //Make sure the user_id is an integer
+        $userIdToManage = intval($_POST['user_id']);
+
+        //Make sure the user isn't trying to manage themselves or someone who isn't a part of the company
+        if($userIdToManage != $_SESSION['user_id'] && $dbhc->getCompanyIdFromUserId($userIdToManage) == $companyId) {
+
+            if ($_POST['action'] == 'toggle_admin') {
+
+                // Toggles the superuser-status of the user
+                if ($dbhc->toggleUserSuperuser($companyId, $userIdToManage)) {
+                    $feedbackForUser = 'User been successfully been promoted or demoted.';
+                    $feedbackColor = 'success';
+                } else {
+                    $feedbackForUser = 'An error occurred.';
+                    $feedbackColor = 'danger';
+                }
+
+            } else if ($_POST['action'] == 'remove') {
+
+                // Removes the user from the company
+                if ($dbhc->removeUserFromCompany($companyId, $userIdToManage)) {
+                    $feedbackForUser = 'User been successfully been removed from the company.';
+                    $feedbackColor = 'warning';
+                } else {
+                    $feedbackForUser = 'An error occurred.';
+                    $feedbackColor = 'danger';
+                }
+
+            }
+        } else {
+            $feedbackForUser = 'You can not manage yourself or someone who is not a part of this company.';
+            $feedbackColor = 'danger';
+        }
+    }
 }
 
 function display() {
@@ -91,8 +128,7 @@ $superuser = $dbhc->isUserCompanySuperuser($_SESSION['user_id']);
             <table class="table table-hover table-bordered table-striped mt-3">
                 <thead>
                     <tr>
-                        <th scope="col">First name</th>
-                        <th scope="col">Last name</th>
+                        <th scope="col">Name</th>
                         <th scope="col">E-mail</th>
                         <th scope="col"></th>
                         <?php
@@ -112,13 +148,31 @@ $superuser = $dbhc->isUserCompanySuperuser($_SESSION['user_id']);
                 }
                 echo '
                     <tr>
-                        <td>' . $user['first_name'] . '</td>
-                        <td>' . $user['last_name'] . '</td>
+                        <td>' . $user['first_name'] . ' ' . $user['last_name'] . '</td>
                         <td><a href="mailto:' . $user['email'] . '">' . $user['email'] . '</a></td>
                         <td>' . $isAdmin . '</td>';
-                        if($superuser) {
-                            echo '<td><button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Make admin"><i class="fa fa-arrow-circle-up"></i></button><button type="button" class="btn btn-danger"  data-bs-toggle="tooltip" data-bs-placement="top" title="Remove user from company"><i class="fa fa-times-circle"></i></button></td>';
-                        }
+                if($superuser && $user['id'] != $_SESSION['user_id']) {
+                    echo '<td>
+                            <div class="d-flex">
+                                <form method="POST" id="toggleadmin-' . $user['id'] . '">
+                                    <input type="hidden" name="user_id" value="' . $user['id'] . '">
+                                    <input type="hidden" name="action" value="toggle_admin">';
+                    if ($user['superuser'] == 1) {
+                        echo '<button type="submit" class="btn btn-secondary me-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Demote to member"><i class="fa fa-arrow-circle-down"></i></button>';
+                    } else {
+                        echo '<button type="submit" class="btn btn-warning me-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Make admin"><i class="fa fa-arrow-circle-up"></i></button>';
+                    }
+                    echo '  </form>
+                                <form method="POST">
+                                    <input type="hidden" name="user_id" value="' . $user['id'] . '">
+                                    <input type="hidden" name="action" value="remove">
+                                    <button type="submit" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove user from company"><i class="fa fa-times-circle"></i></button>
+                                </form>
+                            </div>
+                        </td>';
+                } else {
+                    echo '<td></td>';
+                }
                 echo '</tr>';
             }
         }

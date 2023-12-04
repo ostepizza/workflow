@@ -20,10 +20,11 @@ class Validator {
     }
 
     // Used to validate all form inputs on the registration page
-    function validateRegistration($tosCheckmark, $email, $password, $firstName, $lastName) {
+    function validateRegistration($tosCheckmark, $email, $password, $confirmPassword, $firstName, $lastName) {
         $this->validateTosCheckmark($tosCheckmark);
         $this->validateEmail($email);
         $this->validatePasswordRegister($password);
+        $this->validatePasswordConfirm($password, $confirmPassword);
         $this->validateFirstName($firstName);
         $this->validateLastName($lastName);
     }
@@ -72,18 +73,16 @@ class Validator {
             if(!preg_match('@[0-9]@', $password)) {
                 array_push($this->feedback, 'Password does not contain a number.<br>');
                 $this->valid = false;
-                return;
             }
             if (!preg_match('@[^\w]@', $password)) {
                 array_push($this->feedback, 'Password does not contain a special character.<br>');
                 $this->valid = false;
-                return;
             }
             if (strlen($password) < 8) {
                 array_push($this->feedback, 'Password is not at least 8 characters long.<br>');
                 $this->valid = false;
-                return;
             }
+            return;
         } else {
             array_push($this->feedback, 'You need to enter a password.<br>');
             $this->valid = false;
@@ -108,6 +107,14 @@ class Validator {
             }
         } else {
             array_push($this->feedback, 'New password and confirm password do not match.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
+    function validatePasswordConfirm($password, $confirmPassword) {
+        if ($password != $confirmPassword) {
+            array_push($this->feedback, 'Password and confirm password do not match.<br>');
             $this->valid = false;
             return;
         }
@@ -211,6 +218,39 @@ class Validator {
 
     function validateSearchMinChar($search) {
         $this->validateGenericFieldMinChar($search, 'Search', 3);
+    }
+      
+    // Validates a job listing title, and sets valid to false if it exceeds N characters
+    function validateJobListingTitle($title) {
+        $this->validateGenericField($title, 'Title', 200);
+    }
+
+    // Validates a job listing description, and sets valid to false if it exceeds N characters
+    function validateJobListingDescription($description) {
+        $this->validateGenericField($description, 'Description', 5000);
+    }
+
+    /*
+        Based upon the validateBirthday()-method, but accepts only future dates instead.
+        Used to validate a job listing deadline, by setting valid to false if the format is wrong or date is before today
+        TODO: Refactor to a generic validateDate-method 
+    */
+    function validateJobListingDeadline($date) {
+        if ($date == '') {
+            // If the field is empty, it's valid as the user hasn't entered a date or wants to remove it. Just return.
+            return;
+        } else if (!preg_match("/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/", $date)) {
+            // If the date doesn't follow the format YYYY-MM-DD, it's not valid. Flag false and return. 
+            // (Certain dates are unaccounted for, like february 31st, which doesn't exist)
+            array_push($this->feedback, 'Date is not in a valid format.<br>');
+            $this->valid = false;
+            return;
+        } else if (strtotime($date) < strtotime(date('Y-m-d'))  ) {
+            // If the date is after today, flag false and return.
+            array_push($this->feedback, 'Date can not be before today.<br>');
+            $this->valid = false;
+            return;
+        }
     }
 
     // Validates a company name, and sets valid to false if it's empty or above 100 characters aren't met
