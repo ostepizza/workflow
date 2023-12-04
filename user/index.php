@@ -35,7 +35,7 @@ if (isset($_GET['toggleSearchable'])) {
 if(isset($_POST["updateComp"])) {
     $validator->validateCompetence($_POST["compField"]);
     if ($validator->valid) {
-        if ($dbhu->updateCompetence($_SESSION["user_id"], $_POST["compField"])) {
+        if ($dbhu->updateCompetence($_SESSION["user_id"], strip_tags($_POST["compField"]))) {
             header('Location: index.php?updatedCompetence');
             exit();
         }
@@ -61,9 +61,9 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         if ($userInfo['picture']) {
             $base64Image = base64_encode($userInfo['picture']);
             $pictureData = "data:image/jpeg;base64," . $base64Image;
-            echo '<img src="' . $pictureData . '" alt="Your profile picture" class="img-fluid rounded">';
+            echo '<img src="' . $pictureData . '" alt="Your profile picture" class="img-fluid rounded border border-secondary">';
         } else {
-            echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded">';
+            echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded border border-secondary">';
         }
         ?>
         <a href="edit.php" class="btn btn-primary active mt-3" role="button">Edit profile</a><br>
@@ -114,7 +114,7 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         <h2>Competence:</h2>
         <form action="" method="post">
         <div class="form-group">
-            <textarea class="form-control" name="compField" rows="10"><?php if($userInfo["competence"] !== NULL) { echo $userInfo["competence"]; } ?></textarea>
+            <textarea class="form-control" name="compField" rows="6"><?php if($userInfo["competence"] !== NULL) { echo $userInfo["competence"]; } ?></textarea>
         </div>
         <div class="row">
             <div class="col-md-11">

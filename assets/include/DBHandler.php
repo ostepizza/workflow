@@ -365,10 +365,10 @@ class DBHandlerUser extends DBHandlerBase {
     }
 
     //Function for search field by searching either for name, mail, or competence
-    function searchUserCompetence($searchTerm) {
+    function searchForUser($searchTerm) {
 
         //Prepare the SQL statement 
-        $sql = "SELECT `first_name`, `last_name`, `email`, `competence` 
+        $sql = "SELECT `first_name`, `last_name`, `email`, `competence`, `picture` 
                 FROM `user` 
                 WHERE (`first_name` LIKE ?
                 OR `last_name` LIKE ?
@@ -380,8 +380,6 @@ class DBHandlerUser extends DBHandlerBase {
         $searchTerm = "%$searchTerm%";
         $stmt->bind_param("ssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm);
         if($stmt->execute()) {
-                $stmt->bind_result($userFirstName, $userLastName, $userEmail, $userCompetence);
-
                 $result = $stmt->get_result();
                 $users = $result->fetch_all(MYSQLI_ASSOC);
 

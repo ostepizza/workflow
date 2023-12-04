@@ -32,8 +32,8 @@ if (isset($_POST['companyUpdate'])) {
     if ($validator->valid) {
         if(!$dbhc->isCompanyNameTaken($_POST['name'], $companyId)) {
             // This next section seems inefficient but I'm tired
-            $dbhc->updateCompanyNameWithCompanyId($companyId, $_POST['name']);
-            $dbhc->updateCompanyDescriptionWithCompanyId($companyId, $_POST['description']);
+            $dbhc->updateCompanyNameWithCompanyId($companyId, strip_tags($_POST['name']));
+            $dbhc->updateCompanyDescriptionWithCompanyId($companyId, strip_tags($_POST['description']));
             $feedbackForUser .= 'Company details were updated.<br>';
             $feedbackColor = 'success';   
             $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
