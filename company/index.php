@@ -122,6 +122,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                 <h2>Manage</h2>
                 <hr>
                 <a href="../jobs/new.php"><button type="button" class="btn btn-primary w-100">Create new job listing</button></a>
+                <a href="user_search.php"><button type="button" class="btn btn-secondary w-100 mt-2">Search potential employees</button></a>
                 <a href="view_members.php"><button type="button" class="btn btn-secondary w-100 mt-2">View members of company</button></a>
                 <a href="edit.php"><button type="button" class="btn btn-secondary w-100 mt-2">Edit company details</button></a>
             </div>

@@ -28,6 +28,14 @@ if (isset($_POST['submitProfile'])) {
     // Set color to danger in case the user has just updated something already
     $feedbackColor = 'danger';
 
+    // Strip tags of all input fields
+    $_POST['email'] = strip_tags($_POST['email']);
+    $_POST['firstName'] = strip_tags($_POST['firstName']);
+    $_POST['lastName'] = strip_tags($_POST['lastName']);
+    $_POST['location'] = strip_tags($_POST['location']);
+    $_POST['telephone'] = strip_tags($_POST['telephone']);
+    $_POST['birthday'] = strip_tags($_POST['birthday']);
+
     // Check if all the individual fields are valid
     $validator->validateEmail($_POST['email']);
     $validator->validateFirstName($_POST['firstName']);

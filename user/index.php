@@ -5,6 +5,11 @@ include_once '../assets/include/DBHandler.php';
 $dbhu = new DBHandlerUser();
 $dbhc = new DBHandlerCompany();
 
+// Include form input validator
+include_once '../assets/include/Validator.php';
+$validator = new Validator();
+
+
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
@@ -17,12 +22,29 @@ if(!empty($_SESSION['user_id'])) {
 if (isset($_GET['toggleSearchable'])) {
     $dbhu->toggleSearchable($_SESSION['user_id']);
     header('Location: index.php?updatedSearchable');
-} if (isset($_GET['updatedSearchable'])) {
-    if($userInfo['searchable']) {
+} else if (isset($_GET['updatedSearchable'])) {
+    if ($userInfo['searchable']) {
         $feedbackForUser = 'You are now searchable to employers.';
         $feedbackColor = 'success';
     } else {
         $feedbackForUser = 'You are no longer searchable to employers.';
+    }
+} else if (isset($_GET["updatedCompetence"])) {
+    $feedbackForUser = 'Your competence has been updated';
+    $feedbackColor  = 'success';
+}
+
+if(isset($_POST["updateComp"])) {
+    $validator->validateCompetence($_POST["compField"]);
+    if ($validator->valid) {
+        if ($dbhu->updateCompetence($_SESSION["user_id"], strip_tags($_POST["compField"]))) {
+            header('Location: index.php?updatedCompetence');
+            exit();
+        }
+    } else {
+         // If the form validation failed, tell the user what went wrong.
+         $feedbackForUser = $validator->printAllFeedback();
+         $feedbackColor = 'danger';
     }
 }
 
@@ -31,7 +53,6 @@ global $userInfo;
 
 $userInfo['location'] = $userInfo['location'] ?? 'No location added';
 $userInfo['telephone'] = $userInfo['telephone'] ?? 'No phone added';
-$userInfo['competence'] = $userInfo['competence'] ?? 'You have not written anything about your competence.';
 $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInfo['birthday'])) : 'No birthday added';
 
 ?>
@@ -42,9 +63,9 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         if ($userInfo['picture']) {
             $base64Image = base64_encode($userInfo['picture']);
             $pictureData = "data:image/jpeg;base64," . $base64Image;
-            echo '<img src="' . $pictureData . '" alt="Your profile picture" class="img-fluid rounded">';
+            echo '<img src="' . $pictureData . '" alt="Your profile picture" class="img-fluid rounded border border-secondary">';
         } else {
-            echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded">';
+            echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded border border-secondary">';
         }
         ?>
         <a href="edit.php" class="btn btn-primary active mt-3" role="button">Edit profile</a><br>
@@ -93,9 +114,19 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         </div>
         <br>
         <h2>Competence:</h2>
-        <p>
-            <?php echo $userInfo['competence']; ?>
-        </p>
+        <form action="" method="post">
+        <div class="form-group">
+            <textarea class="form-control" name="compField" rows="6"><?php if($userInfo["competence"] !== NULL) { echo $userInfo["competence"]; } ?></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-11">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" name="updateComp" class="btn btn-primary mt-2">Save</button>
+            </div>
+        </div>
+    
+        </form>
         <hr class="mb-5">
         <h2>Jobs you've applied to:</h2>
         a table

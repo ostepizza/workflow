@@ -363,6 +363,33 @@ class DBHandlerUser extends DBHandlerBase {
             return false;
         }
     }
+
+    //Function for search field by searching either for name, mail, or competence
+    function searchForUser($searchTerm) {
+
+        //Prepare the SQL statement 
+        $sql = "SELECT `first_name`, `last_name`, `email`, `competence`, `picture` 
+                FROM `user` 
+                WHERE (`first_name` LIKE ?
+                OR `last_name` LIKE ?
+                OR `email` LIKE ? 
+                OR `competence` LIKE ?) 
+                AND `searchable` = 1";
+        $stmt = $this->conn->prepare($sql);
+        //Binds the same paramaters with the fuction variable
+        $searchTerm = "%$searchTerm%";
+        $stmt->bind_param("ssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+        if($stmt->execute()) {
+                $result = $stmt->get_result();
+                $users = $result->fetch_all(MYSQLI_ASSOC);
+
+                $stmt->close();
+                return $users;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
 }
 
 class DBHandlerCompany extends DBHandlerBase {

@@ -193,6 +193,15 @@ class Validator {
         }
     }
 
+    // Validates a generic field, flags valid to false if $fieldValue is shorter than the $minLength
+    function validateGenericFieldMinChar($fieldValue, $fieldName, $minLength) {
+        if (strlen($fieldValue) < $minLength) {
+            array_push($this->feedback, $fieldName . ' must be at least ' . $minLength . ' characters.<br>');
+            $this->valid = false;
+            return;
+        }
+    }
+
     // Validates location field, flags valid to false if it exceeds 40 characters
     function validateLocation($location) {
         $this->validateGenericField($location, 'Location', 40);
@@ -203,6 +212,14 @@ class Validator {
         $this->validateGenericField($competence, 'Competence', 5000);
     }
 
+    function validateSearch($search) {
+        $this->validateGenericField($search, 'Search', 100);
+    }
+
+    function validateSearchMinChar($search) {
+        $this->validateGenericFieldMinChar($search, 'Search', 3);
+    }
+      
     // Validates a job listing title, and sets valid to false if it exceeds N characters
     function validateJobListingTitle($title) {
         $this->validateGenericField($title, 'Title', 200);
