@@ -1086,10 +1086,11 @@ class DBHandlerApplication extends DBHandlerBase {
     }
 
     // Retrieves all applications from a user id. Returns an array with the applications if successful, else returns false.
+    // TODO: This is broken, fix it
     function getAllUserApplications($userId) {
         $sql = 'SELECT ja.*, jl.name as listing_name, jl.company_id, jl.deadline, jl.published, jl.views, c.name as company_name, c.description as company_description
             FROM `job_application` ja
-            JOIN `job_listing` jl ON a.listing_id = jl.id
+            JOIN `job_listing` jl ON ja.job_listing_id = jl.id
             JOIN `company` c ON jl.company_id = c.id
             WHERE ja.`user_id` = ? 
             ORDER BY jl.`published` DESC, jl.`deadline` IS NULL ASC, jl.`deadline` ASC';
@@ -1132,7 +1133,7 @@ class DBHandlerApplication extends DBHandlerBase {
 
     // Retrieves an application by application id. Returns an array with the application if successful, else returns false.
     function getApplication($applicationId) {
-        $sql = 'SELECT ja.*, u.first_name, u.last_name, u.email, u.telephone, u.location, u.birthday, u.picture, u.cv, u.competence, c.name as company_name
+        $sql = 'SELECT ja.*, u.first_name, u.last_name, u.email, u.telephone, u.location, u.birthday, u.picture, u.cv, u.competence, c.id as company_id, c.name as company_name, jl.name as listing_name
             FROM `job_application` ja
             JOIN `user` u ON ja.user_id = u.id
             JOIN `job_listing` jl ON ja.job_listing_id = jl.id

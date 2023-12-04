@@ -4,12 +4,13 @@
 include_once '../assets/include/DBHandler.php';
 $dbhu = new DBHandlerUser();
 $dbhc = new DBHandlerCompany();
+$dbha = new DBHandlerApplication();
 
 // Include form input validator
 include_once '../assets/include/Validator.php';
 $validator = new Validator();
 
-
+// Set up empty feedback
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
@@ -17,6 +18,7 @@ $feedbackColor = "danger";
 if(!empty($_SESSION['user_id'])) {
     $userInfo = $dbhu->selectAllUserInfoByUserId($_SESSION['user_id']);
     $userInfo = array_merge($userInfo, $dbhc->getCompanyDetailsFromUserId($_SESSION['user_id']));
+    $applications = $dbha->getAllUserApplications($_SESSION['user_id']);
 }
 
 if (isset($_GET['toggleSearchable'])) {
@@ -48,8 +50,9 @@ if(isset($_POST["updateComp"])) {
     }
 }
 
+
 function display() {
-global $userInfo;
+global $userInfo, $applications;
 
 $userInfo['location'] = $userInfo['location'] ?? 'No location added';
 $userInfo['telephone'] = $userInfo['telephone'] ?? 'No phone added';
@@ -128,8 +131,57 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
     
         </form>
         <hr class="mb-5">
-        <h2>Jobs you've applied to:</h2>
-        a table
+        <h2 class="mb-3">Applications:</h2>
+        <?php 
+        if ($applications) {
+            foreach ($applications as $application) {
+                if ($application['sent'] == 1) {
+                    $status = '<span class="badge bg-success">Sent</span>';
+                } else {
+                    $status = '<span class="badge bg-warning">Draft</span>';
+                }
+                ?>
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <?php echo '<b>' . $application['title'] . '</b> (To ' . $application['company_name'] . ') ' . $status; ?>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <?php
+                                if (strlen($application['text']) > 175) {
+                                    echo substr($application['text'], 0, 175) . '...';
+                                } else {
+                                    echo $application['text'];
+                                }
+                                ?>
+                            </div>
+
+                            <div class="col-md-1"></div>
+
+                            <div class="col-md-2">
+                                <div class="row">
+                                    <div class="col-md-6 px-1">
+                                        <a href="../applications/edit.php?id=1" class="btn btn-secondary w-100" role="button">Edit</a>
+                                    </div>
+                                    <div class="col-md-6 px-1">
+                                        <a href="../applications/view.php?id=1" class="btn btn-primary w-100 ml-2" role="button">View</a>
+                                    </div>
+                                </div>
+                                
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <?php
+            }
+        } else {
+            echo '<p>You have not applied to any jobs yet.</p>';
+        }
+        ?>
+        
     </div>
 </div>
 <script>
