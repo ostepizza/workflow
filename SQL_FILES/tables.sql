@@ -62,6 +62,23 @@ CREATE TABLE `job_listing` (
         ON UPDATE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `job_application` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `title` varchar(255) DEFAULT NULL,
+    `text` VARCHAR(5000) DEFAULT NULL,
+    `sent` TINYINT(1) DEFAULT 0 NOT NULL,
+    `sent_datetime` datetime DEFAULT NULL,
+    `job_listing_id` int(11) NOT NULL,
+    `user_id` int(11) NOT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`job_listing_id`) REFERENCES `job_listing`(`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 -- Some test data
 INSERT INTO `user` (`id`, `email`, `password`, `first_name`, `last_name`, `telephone`, `location`, `birthday`, `picture`, `cv`, `searchable`, `competence`) VALUES (NULL, 'test@test.net', 'kjhvdf', 'Test', 'User', NULL, NULL, NULL, NULL, NULL, '0', NULL), (NULL, 'jeff@jefferson.net', 'ojhdbf', 'Jeff', 'Jefferson', NULL, NULL, NULL, NULL, NULL, '0', NULL);
