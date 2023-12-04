@@ -68,6 +68,8 @@ CREATE TABLE `job_application` (
     `text` VARCHAR(5000) DEFAULT NULL,
     `sent` TINYINT(1) DEFAULT 0 NOT NULL,
     `sent_datetime` datetime DEFAULT NULL,
+    `pinned` TINYINT(1) DEFAULT 0 NOT NULL,
+    `archived` TINYINT(1) DEFAULT 0 NOT NULL,
     `job_listing_id` int(11) NOT NULL,
     `user_id` int(11) NOT NULL,
     PRIMARY KEY (`id`),
