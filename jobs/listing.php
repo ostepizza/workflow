@@ -71,7 +71,7 @@ global $listing;
                     <hr>
 
                     <div class="col-md-4 mx-auto">
-                        <a class="btn btn-primary" href="application.php?companyId=' . $listing['companyId'] . '">Apply for job</a>
+                        <a class="btn btn-primary" href="../applications/new.php?listingId=' . $listing['id'] . '">Apply for job</a>
                     </div>
                 </div>
             </div>

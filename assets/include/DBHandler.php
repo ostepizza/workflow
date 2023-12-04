@@ -886,6 +886,61 @@ class DBHandlerListing extends DBHandlerCompany {
         }
     }
 
+    // Checks if a listing is published. Returns true if published, else returns false.
+    function isListingPublished($listingId) {
+        $sql = 'SELECT `published` FROM `job_listing` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $listingId);
+
+        if ($stmt->execute()) {
+            $stmt->store_result();
+            if ($stmt->num_rows == 1) {
+                $stmt->bind_result($published);
+                $stmt->fetch();
+                $stmt->close();
+                return $published;
+            } else {
+                $stmt->close();
+                return false;
+            }
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function isListingDeadlineNotPassed($listingId) {
+        $sql = 'SELECT `deadline` FROM `job_listing` WHERE `id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $listingId);
+
+        if ($stmt->execute()) {
+            $stmt->store_result();
+            if ($stmt->num_rows == 1) {
+                $stmt->bind_result($deadline);
+                $stmt->fetch();
+                $stmt->close();
+                if ($deadline == NULL) {
+                    return true;
+                } else {
+                    $deadline = strtotime($deadline);
+                    $today = strtotime(date('Y-m-d'));
+                    if ($deadline >= $today) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            } else {
+                $stmt->close();
+                return false;
+            }
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
     // Creates a new listing and returns the new listing ID if successful. Else returns false.
     function createNewListing($companyId) {
         // Create a new empty listing
