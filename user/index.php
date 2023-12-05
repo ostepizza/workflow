@@ -71,7 +71,7 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
             echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded border border-secondary">';
         }
         ?>
-        <a href="edit.php" class="btn btn-primary active mt-3" role="button">Edit profile</a><br>
+        <a href="edit.php" class="btn btn-primary active mt-3" role="button">Edit profile <i class="fa-solid fa-pen-to-square"></i></a><br>
         <?php
         if($userInfo['cv'] != NULL) {
             // Button is currently non functional
@@ -173,7 +173,7 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
                                         ?>
                                     </div>
                                     <div class="col-md-6 px-1">
-                                        <a href="../applications/view.php?id=<?php echo $application['id']; ?>" class="btn btn-primary w-100 ml-2" role="button">View</a>
+                                        <a href="../applications/view.php?id=<?php echo $application['id']; ?>" class="btn btn-primary w-100 ml-2" role="button">View <i class="fa-solid fa-eye"></i></a>
                                     </div>
                                 </div>
                                 

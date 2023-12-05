@@ -30,7 +30,7 @@ global $listing;
     <div class="row mt-4">
         <!-- Headline of the job listing -->
         <div class="col-md-8">
-        <a class="btn btn-secondary" href="index.php">Go back to job listings</a>
+        <a class="btn btn-secondary" href="index.php"><i class="fa-solid fa-circle-left"></i> Go back to job listings</a>
         </div>
     </div>
     <?php

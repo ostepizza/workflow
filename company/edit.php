@@ -96,7 +96,7 @@ global $companyName, $companyDescription;
 ?>
 
 <!-- Content here -->
-<a href="index.php"><button type="button" class="btn btn-secondary mb-3 mt-5">&lt; Return to dashboard</button></a>
+<a href="index.php"><button type="button" class="btn btn-secondary mb-3 mt-5"><i class="fa-solid fa-circle-left"></i> Return to dashboard</button></a>
 
 <div class="row">
     <div class="col-md-8">

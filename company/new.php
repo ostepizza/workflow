@@ -55,7 +55,7 @@ function display() {
 <!-- Content here -->
 <div class="row mt-5">
     <div class="col-md-12">
-        <a href="index.php"><button type="button" class="btn btn-secondary mb-3">&lt; Return to dashboard</button></a>
+        <a href="index.php"><button type="button" class="btn btn-secondary mb-3"><i class="fa-solid fa-circle-left"></i> Return to dashboard</button></a>
         <h1>New company</h1>
         <form action="" method="post">
             <div class="form-group">

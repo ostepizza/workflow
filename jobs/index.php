@@ -61,7 +61,7 @@ global $listings, $categories;
                         ?>
 
                         <hr>
-                        <button type="submit" id="search" name="search" class="btn btn-primary">Search for jobs</button>
+                        <button type="submit" id="search" name="search" class="btn btn-primary">Search for jobs <i class="fa-solid fa-magnifying-glass"></i></button>
                     </form>
                 </div>
             </div>

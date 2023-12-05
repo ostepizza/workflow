@@ -100,7 +100,7 @@ global $listing, $categories;
 
 ?>
 <!-- Content here -->
-<a href="../company/index.php"><button type="button" class="btn btn-secondary mb-3 mt-5">&lt; Return to dashboard</button></a>
+<a href="../company/index.php"><button type="button" class="btn btn-secondary mb-3 mt-5"><i class="fa-solid fa-circle-left"></i> Return to dashboard</button></a>
 
 <div class="row">
     <p>

@@ -74,12 +74,12 @@ $pinnedApplicants = $dbha->getAllListingApplications($_GET["id"], false, true);
 function display() {
 global $applicants, $pinnedApplicants;
 ?>
-    <a href="../company/index.php"><button type="button" class="btn btn-secondary mb-3 mt-5">&lt; Return to dashboard</button></a>
+    <a href="../company/index.php"><button type="button" class="btn btn-secondary mb-3 mt-5"><i class="fa-solid fa-circle-left"></i> Return to dashboard</button></a>
 
     <div class="row mt-3">
         <div class="col-md-12">
             <h1>Recieved job applications</h1>
-            <a href="received_archived.php?id=<?php echo $_GET["id"] ?>" class="btn btn-primary mb-3 mt-3">View archived applications</a>
+            <a href="received_archived.php?id=<?php echo $_GET["id"] ?>" class="btn btn-primary mb-3 mt-3">View archived applications <i class="fa-solid fa-eye"></i></a>
         </div>
     </div>
 <?php
@@ -110,21 +110,21 @@ global $applicants, $pinnedApplicants;
                                     <form method="POST">
                                         <input type="hidden" name="applicationId" value="<?php echo $applicant['id'] ?>">
                                         <input type="hidden" name="action" value="pin">
-                                        <button type="submit" class="btn btn-danger w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove application pin">Unpin</button>
+                                        <button type="submit" class="btn btn-danger w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove application pin"><i class="fa-solid fa-circle-minus"></i></button>
                                     </form>
                                 </div>  
                                 <div class="col-md-6">
                                     <form method="POST">
                                         <input type="hidden" name="applicationId" value="<?php echo $applicant['id'] ?>">
                                         <input type="hidden" name="action" value="archive">
-                                        <button type="submit" class="btn btn-warning w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Archive application">Archive</button>
+                                        <button type="submit" class="btn btn-warning w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Archive application"><i class="fa-solid fa-box-archive"></i></i></button>
                                     </form>
                                 </div>
                             </div>
                             <hr>
                             <div class="row mt-3">
                                 <div class="col-md-12">
-                                    <a href="view.php?id=<?php echo $applicant['id'] ?>" class="btn btn-primary w-100">View</a>
+                                    <a href="view.php?id=<?php echo $applicant['id'] ?>" class="btn btn-primary w-100">View <i class="fa-solid fa-eye"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -164,21 +164,21 @@ global $applicants, $pinnedApplicants;
                                     <form method="POST">
                                         <input type="hidden" name="applicationId" value="<?php echo $applicant['id'] ?>">
                                         <input type="hidden" name="action" value="pin">
-                                        <button type="submit" class="btn btn-success w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Pin application to top">Pin</button>
+                                        <button type="submit" class="btn btn-success w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Pin application to top"><i class="fa-solid fa-thumbtack"></i></button>
                                     </form>
                                 </div>
                                 <div class="col-md-6">
                                     <form method="POST">
                                         <input type="hidden" name="applicationId" value="<?php echo $applicant['id'] ?>">
                                         <input type="hidden" name="action" value="archive">
-                                        <button type="submit" class="btn btn-warning w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Archive application">Archive</button>
+                                        <button type="submit" class="btn btn-warning w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Archive application"><i class="fa-solid fa-box-archive"></i></button>
                                     </form>
                                 </div>
                             </div>
                             <hr>
                             <div class="row mt-3">
                                 <div class="col-md-12">
-                                    <a href="view.php?id=<?php echo $applicant['id'] ?>" class="btn btn-primary w-100">View</a>
+                                    <a href="view.php?id=<?php echo $applicant['id'] ?>" class="btn btn-primary w-100">View <i class="fa-solid fa-eye"></i></a>
                                 </div>
                             </div>
                         </div>

@@ -70,12 +70,12 @@ $archivedApplicants = $dbha->getAllListingApplications($_GET["id"], true);
 function display() {
 global $archivedApplicants;
 ?>
-    <a href="../company/index.php"><button type="button" class="btn btn-secondary mb-3 mt-5">&lt; Return to applications</button></a>
+    <a href="../company/index.php"><button type="button" class="btn btn-secondary mb-3 mt-5"><i class="fa-solid fa-circle-left"></i> Return to applications</button></a>
 
     <div class="row mt-3">
         <div class="col-md-12">
             <h1>Archived job applications</h1>
-            <a href="received.php?id=<?php echo $_GET["id"] ?>" class="btn btn-primary mb-3 mt-3">View applications</a>
+            <a href="received.php?id=<?php echo $_GET["id"] ?>" class="btn btn-primary mb-3 mt-3">View applications view <i class="fa-solid fa-eye"></i></a>
         </div>
     </div>
 <?php
@@ -105,14 +105,14 @@ global $archivedApplicants;
                                     <form method="POST">
                                         <input type="hidden" name="applicationId" value="<?php echo $applicant['id'] ?>">
                                         <input type="hidden" name="action" value="archive">
-                                        <button type="submit" class="btn btn-danger w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Unarchive application">Unarchive</button>
+                                        <button type="submit" class="btn btn-danger w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Unarchive application">Unarchive <i class="fa-solid fa-boxes-packing"></i></button>
                                     </form>
                                 </div>
                             </div>
                             <hr>
                             <div class="row mt-3">
                                 <div class="col-md-12">
-                                    <a href="view.php?id=<?php echo $applicant['id'] ?>" class="btn btn-primary w-100">View</a>
+                                    <a href="view.php?id=<?php echo $applicant['id'] ?>" class="btn btn-primary w-100">View <i class="fa-solid fa-eye"></i></a>
                                 </div>
                             </div>
                         </div>

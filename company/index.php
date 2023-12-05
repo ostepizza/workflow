@@ -106,9 +106,9 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                                     ' . $listing['category_title'] . '
                                 </div>
                                 <div class="col-md-3">
-                                    <a href="../applications/received.php?id='.$listing["id"].'"><button type="button" class="btn btn-primary w-100">View applications</button></a>
-                                    <a href="../jobs/edit.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Edit listing</button></a>
-                                    <a href="../jobs/listing.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Preview listing</button></a>
+                                    <a href="../applications/received.php?id='.$listing["id"].'"><button type="button" class="btn btn-primary w-100">View applications <i class="fa-solid fa-eye"></i></button></a>
+                                    <a href="../jobs/edit.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Edit listing edit <i class="fa-solid fa-pen-to-square"></i></button></a>
+                                    <a href="../jobs/listing.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Preview listing <i class="fa-solid fa-eye"></i></button></a>
                                 </div>
                             </div>
                         </div>
@@ -131,9 +131,9 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                 <h2>Manage</h2>
                 <hr>
                 <a href="../jobs/new.php"><button type="button" class="btn btn-primary w-100">Create new job listing</button></a>
-                <a href="user_search.php"><button type="button" class="btn btn-secondary w-100 mt-2">Search potential employees</button></a>
-                <a href="view_members.php"><button type="button" class="btn btn-secondary w-100 mt-2">View members of company</button></a>
-                <a href="edit.php"><button type="button" class="btn btn-secondary w-100 mt-2">Edit company details</button></a>
+                <a href="user_search.php"><button type="button" class="btn btn-secondary w-100 mt-2">Search potential employees<i class="fa-solid fa-magnifying-glass"></i></button></a>
+                <a href="view_members.php"><button type="button" class="btn btn-secondary w-100 mt-2">View members of company<i class="fa-solid fa-eye"></i></button></a>
+                <a href="edit.php"><button type="button" class="btn btn-secondary w-100 mt-2">Edit company details<i class="fa-solid fa-pen-to-square"></i></button></a>
             </div>
             <div class="row mt-3">
                 <h2>Statistics</h2>

@@ -87,7 +87,7 @@ function display() {
 global $application;
 ?>
 
-    <a href="../user/index.php" class="btn btn-secondary mt-3" role="button">Go to application overview</a><br>
+    <a href="../user/index.php" class="btn btn-secondary mt-3" role="button"><i class="fa-solid fa-circle-left"></i> Go to application overview</a><br>
 
     <div class="row mt-3">
         <div class="col-md-12">
@@ -136,7 +136,7 @@ global $application;
                                 <button class="btn btn-success w-100" type="submit" name="applicationUpdate">Save</button>
                             </div>
                             <div class="col-md-6">
-                                <button class="btn btn-warning w-100" type="submit" name="applicationSend">Save & send</button>
+                                <button class="btn btn-warning w-100" type="submit" name="applicationSend">Save & send <i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>
                     </div>

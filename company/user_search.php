@@ -33,7 +33,7 @@ global $searched;
 
 <div class="row mt-5">
     <div class="col-md-12">
-        <a href="index.php"><button type="button" class="btn btn-secondary mb-3">&lt; Return to dashboard</button></a>
+        <a href="index.php"><button type="button" class="btn btn-secondary mb-3"><i class="fa-solid fa-circle-left"></i> Return to dashboard</button></a>
         <h1>User search</h1>
     </div>
 </div>
@@ -58,8 +58,8 @@ global $searched;
                         <input type="text" class="form-control" name="searchfield" placeholder="Example: Developer">
                     </div>
                 </div>
-                <div class="col-md-1 ">
-                    <button class="btn btn-primary" name="search" type="submit">Search</button>
+                <div class="col-md-2 ">
+                    <button class="btn btn-primary" name="search" type="submit">Search <i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
             </div>
         </form>

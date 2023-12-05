@@ -96,7 +96,7 @@ if(isset($_GET['loggedout'])) {
             <div class="card-body">
                 <h5 class="card-title">Become discoverable to employers</h5>
                 <p class="card-text">Make your profile searchable to potential employers by changing your profile and updating your fields of expertise!</p>
-                <a href="user/index.php" class="btn btn-primary">View profile</a>
+                <a href="user/index.php" class="btn btn-primary">View profile <i class="fa-solid fa-eye"></i></a>
             </div>
         </div>
 

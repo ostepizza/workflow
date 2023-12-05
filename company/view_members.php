@@ -94,7 +94,7 @@ $superuser = $dbhc->isUserCompanySuperuser($_SESSION['user_id']);
 <!-- Content here -->
 <div class="row mt-5">
     <div class="col-md-12">
-        <a href="index.php"><button type="button" class="btn btn-secondary mb-3">&lt; Return to dashboard</button></a>
+        <a href="index.php"><button type="button" class="btn btn-secondary mb-3"><i class="fa-solid fa-circle-left"></i> Return to dashboard</button></a>
         <?php
         echo '<h1> ' . $companyName . ' members</h1>';
 
