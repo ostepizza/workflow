@@ -6,20 +6,31 @@ class Validator {
     // Flag for checking whether the input provided is valid
     public $valid = true;
 
-    function __construct(){
-
-    }
-
+    /**
+     * Resets the validator, so that it can be used again
+     * @return void
+     */
     function validatorReset() {
         $this->valid = true;
     }
 
-    // Returns all feedback as a string
+    /**
+     * Returns all feedback stored in the feedback array as a string
+     * @return string All feedback stored in the feedback array
+     */
     function printAllFeedback() {
         return implode($this->feedback);
     }
 
-    // Used to validate all form inputs on the registration page
+    /**
+     * Validates all inputs on the registration page
+     * @param bool $tosCheckmark Whether the user has checked the terms & conditions checkbox
+     * @param string $email The email the user has entered
+     * @param string $password The password the user has entered
+     * @param string $confirmPassword The password the user has entered in the confirm password field
+     * @param string $firstName The first name the user has entered
+     * @param string $lastName The last name the user has entered
+     */
     function validateRegistration($tosCheckmark, $email, $password, $confirmPassword, $firstName, $lastName) {
         $this->validateTosCheckmark($tosCheckmark);
         $this->validateEmail($email);
@@ -29,13 +40,21 @@ class Validator {
         $this->validateLastName($lastName);
     }
 
-    // Used to validate login-form inputs
+    /**
+     * Validates all inputs on the login page
+     * @param string $email The email the user has entered
+     * @param string $password The password the user has entered
+     */
     function validateLogin($email, $password) {
         $this->validateEmail($email);
         $this->validatePasswordLogin($password);
     }
 
-    // Used to validate the tos checkmark (can probably be changed to work with any checkmark)
+    /**
+     * Validates the ToS-checkmark on the registration page
+     * (Should be refactored to a generic validateCheckbox-method)
+     * @param bool $tosCheckmark Whether the user has checked the terms & conditions checkbox
+     */
     function validateTosCheckmark($tosCheckmark) {
         if (!$tosCheckmark) {
             array_push($this->feedback, 'You need to accept the terms & conditions.<br>');
@@ -43,7 +62,10 @@ class Validator {
         }
     }
 
-    // Validates email input, sets $valid to false if conditions aren't met
+    /**
+     * Validates an email input, sets $valid to false if conditions aren't met
+     * @param string $email The email to be validated
+     */
     function validateEmail($email) {
         if (!empty($email)) {
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -58,7 +80,10 @@ class Validator {
         }
     }
 
-    // Validates password input for login password, sets $valid to false if empty
+    /**
+     * Validates a password input, sets $valid to false if conditions aren't met
+     * @param string $password The password to be validated
+     */
     function validatePasswordLogin($password) {
         if (empty($password)) {
             array_push($this->feedback, 'You need to enter a password.<br>');
@@ -67,7 +92,11 @@ class Validator {
         }
     }
 
-    // Validates password input for registering/changing user password, sets $valid to false if all conditions aren't met
+    /**
+     * Validates a password input, sets $valid to false if conditions aren't met
+     * Despite the name, this method is used for both registering and changing a users password
+     * @param string $password The password to be validated
+     */
     function validatePasswordRegister($password) {
         if (!empty($password)) {
             if(!preg_match('@[0-9]@', $password)) {
@@ -90,6 +119,13 @@ class Validator {
         }
     }
 
+    /**
+     * Validates a password input, sets $valid to false if conditions aren't met
+     * @param string $currentPassword The current password the user has entered
+     * @param string $newPassword The new password the user has entered
+     * @param string $confirmNewPassword The new password the user has entered in the confirm password field
+     * @param string $hashedPassword The hashed password from the database
+     */
     function validatePasswordNew($currentPassword, $newPassword, $confirmNewPassword, $hashedPassword) {
         if($newPassword == $confirmNewPassword) {
             if(password_verify($currentPassword, $hashedPassword)) {
@@ -112,6 +148,11 @@ class Validator {
         }
     }
 
+    /**
+     * Validates a password input, sets $valid to false if conditions aren't met
+     * @param string $password The password to be validated
+     * @param string $confirmPassword The password to be validated
+     */
     function validatePasswordConfirm($password, $confirmPassword) {
         if ($password != $confirmPassword) {
             array_push($this->feedback, 'Password and confirm password do not match.<br>');
@@ -120,7 +161,11 @@ class Validator {
         }
     }
 
-    // Validates names, sets $valid to false if conditions aren't met. $name is the name checked, $nameType is the type of name (eg. first or last)
+    /**
+     * Validates a name input, sets $valid to false if conditions aren't met
+     * @param string $name The name to be validated
+     * @param string $nameType The type of name (eg. first or last)
+     */
     function validateName($name, $nameType) {
         if (!empty($name)) {
             if (!preg_match("/^(?!\s+$)[\p{L}'\s-]+$/u", $name)) {
@@ -135,17 +180,26 @@ class Validator {
         }
     }
 
-    // Validates first-name input, sets $valid to false if conditions aren't met
+    /**
+     * Validates a first name input, sets $valid to false if conditions aren't met
+     * @param string $firstName The first name to be validated
+     */
     function validateFirstName($firstName) {
         $this->validateName($firstName, 'first');
     }
 
-    // Validates last-name input, sets $valid to false if conditions aren't met
+    /**
+     * Validates a last name input, sets $valid to false if conditions aren't met
+     * @param string $lastName The last name to be validated
+     */
     function validateLastName($lastName) {
         $this->validateName($lastName, 'last');
     }
 
-    // Validates phone number input, sets $valid to false if conditions aren't met
+    /**
+     * Validates a phone number input, sets $valid to false if conditions aren't met
+     * @param string $phoneNumber The phone number to be validated
+     */
     function validateTelephone($phoneNumber) {
         if (!preg_match("/^\+?\d*$/", $phoneNumber)) {
             array_push($this->feedback, 'Phone number can only consist of numbers and a preceeding +.<br>');
@@ -158,10 +212,11 @@ class Validator {
         }
     }
 
-    /*
-        Used to validate a users birthday, by setting valid to false if the format is wrong or date is after today
-        TODO: Refactor to a generic validateDate-method 
-    */
+    /**
+     * Validates a birthday input, sets $valid to false if conditions aren't met
+     * (Should be refactored to a generic validateDate-method)
+     * @param string $date The date to be validated
+     */
     function validateBirthday($date) {
         if ($date == '') {
             // If the field is empty, it's valid as the user hasn't entered a date or wants to remove it. Just return.
@@ -180,11 +235,12 @@ class Validator {
         }
     }
 
-    /*
-        Used to validate the length of generic fields, that have no specific criteria and are optional to enter
-        $fieldValue is the input to be checked, $fieldName is the name of the field (e.g. Location), and $maxLength is the max amount of characters it can be.
-        Sets the valid flag to false if $fieldValue is longer than the $maxLength
-    */
+    /**
+     * Validates a generic field based on maximum length, flags valid to false if $fieldValue is longer than the $maxLength
+     * @param string $fieldValue The value to be validated (e.g. Copenhagen)
+     * @param string $fieldName The name of the field to be validated (e.g. Location)
+     * @param int $maxLength The max length of the field (e.g. 40)
+     */
     function validateGenericField($fieldValue, $fieldName, $maxLength) {
         if (strlen($fieldValue) > $maxLength) {
             array_push($this->feedback, $fieldName . ' can not exceed ' . $maxLength . ' characters.<br>');
@@ -193,7 +249,12 @@ class Validator {
         }
     }
 
-    // Validates a generic field, flags valid to false if $fieldValue is shorter than the $minLength
+    /**
+     * Validates a generic field based on minimum length, flags valid to false if $fieldValue is shorter than the $minLength
+     * @param string $fieldValue The value to be validated (e.g. Copenhagen)
+     * @param string $fieldName The name of the field to be validated (e.g. Location)
+     * @param int $minLength The min length of the field (e.g. 3)
+     */
     function validateGenericFieldMinChar($fieldValue, $fieldName, $minLength) {
         if (strlen($fieldValue) < $minLength) {
             array_push($this->feedback, $fieldName . ' must be at least ' . $minLength . ' characters.<br>');
@@ -202,49 +263,75 @@ class Validator {
         }
     }
 
-    // Validates location field, flags valid to false if it exceeds 40 characters
+    /**
+     * Validates a location input, sets $valid to false if it exceeds 40 characters
+     * @param string $location The location to be validated
+     */
     function validateLocation($location) {
         $this->validateGenericField($location, 'Location', 40);
     }
 
-    // Validates competence field, flags valid to false if it exceeds 5000 characters
+    /**
+     * Validates a competence input, sets $valid to false if it exceeds 5000 characters
+     * @param string $competence The competence to be validated
+     */
     function validateCompetence($competence) {
         $this->validateGenericField($competence, 'Competence', 5000);
     }
 
+    /**
+     * Validates a search input, sets $valid to false if it exceeds 100 characters
+     * @param string $search The search to be validated
+     */
     function validateSearch($search) {
         $this->validateGenericField($search, 'Search', 100);
     }
 
+    /**
+     * Validates a search input, sets $valid to false if it is less than 3 characters
+     * @param string $search The search to be validated
+     */
     function validateSearchMinChar($search) {
         $this->validateGenericFieldMinChar($search, 'Search', 3);
     }
-      
-    // Validates a job listing title, and sets valid to false if it exceeds N characters
+
+    /**
+     * Validates a job listing title, and sets valid to false if it exceeds 200 characters
+     * @param string $title The title to be validated
+     */
     function validateJobListingTitle($title) {
         $this->validateGenericField($title, 'Title', 200);
     }
 
-    // Validates a job listing description, and sets valid to false if it exceeds N characters
+    /**
+     * Validates a job listing description, and sets valid to false if it exceeds 5000 characters
+     * @param string $description The description to be validated
+     */
     function validateJobListingDescription($description) {
         $this->validateGenericField($description, 'Description', 5000);
     }
 
-    //Validates the title when a user is writing a title on job applications
+    /**
+     * Validates a job application title, and sets valid to false if it exceeds 200 characters
+     * @param string $title The title to be validated
+     */
     function validateJobApplicationTitle($title) {
         $this->validateGenericField($title, 'Title', 200);
     }
 
-    //Validates the title when a user is writing a description on job applications
+    /**
+     * Validates a job application description, and sets valid to false if it exceeds 5000 characters
+     * @param string $description The description to be validated
+     */
     function validateJobApplicationDescription($description) {
         $this->validateGenericField($description, 'Description', 5000);
     }
 
-    /*
-        Based upon the validateBirthday()-method, but accepts only future dates instead.
-        Used to validate a job listing deadline, by setting valid to false if the format is wrong or date is before today
-        TODO: Refactor to a generic validateDate-method 
-    */
+    /**
+     * Validates a job listing deadline, and sets valid to false if something is wrong
+     * (Should be refactored to a generic validateDate-method, together with validateBirthday())
+     * @param string $date The date to be validated
+     */
     function validateJobListingDeadline($date) {
         if ($date == '') {
             // If the field is empty, it's valid as the user hasn't entered a date or wants to remove it. Just return.
@@ -263,7 +350,10 @@ class Validator {
         }
     }
 
-    // Validates a company name, and sets valid to false if it's empty or above 100 characters aren't met
+    /**
+     * Validates a company name, and sets valid to false if it's empty or above 100 characters aren't met
+     * @param string $name The name to be validated
+     */
     function validateCompanyName($name) {
         if (!empty($name)) {
             if(strlen($name) <= 100) {
@@ -281,7 +371,10 @@ class Validator {
         }
     }
 
-    // Validates a company description, flags valid to false if empty or above 500 characters
+    /**
+     * Validates a company description, and sets valid to false if it's empty or above 500 characters aren't met
+     * @param string $description The description to be validated
+     */
     function validateCompanyDescription($description) {
         if(strlen($description) <= 500) {
             // This can be extended to further change the criteria for description validation
