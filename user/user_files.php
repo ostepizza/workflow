@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // If successfully moved, update the database
                 if ($dbhu->updateProfileImage($_SESSION['user_id'], $fileName)) {
                     // If successfully updated DB, redirect to page with feedback
-                    header('location: upload_image.php?updatedImage');
+                    header('location: user_files.php?updatedImage');
                     exit();
                 } else {
                     $feedbackForUser = "There was an error updating the database.<br>";
@@ -177,7 +177,7 @@ global $userInfo;
                 <?php
                 if (isset($userInfo['cv'])) {
                     echo 'You have already uploaded your resume. Uploading a new one will overwrite the old.<br>';
-                    echo '<a href="../assets/pdf/user/' . $userInfo['cv'] . '" class="btn btn-primary w-100" role="button">View resume</a>';
+                    echo '<a href="../assets/pdf/user/' . $userInfo['cv'] . '" class="btn btn-primary w-100" role="button" target=”_blank”>View resume</a>';
                 } else {
                     echo 'You have not yet uploaded a resume.<br>';
                 }
