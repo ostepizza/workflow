@@ -1,6 +1,4 @@
 <?php
-include("connection.php");
-
 class DBHandlerBase {
     protected $conn; //DB connection
 
