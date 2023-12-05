@@ -1,6 +1,10 @@
 <?php
 class DBHandlerCompany extends DBHandlerBase {
-    // Creates a new company with a name, description, and the id of the user requesting it. Returns true if successful, else returns false.
+    /**
+     * Creates a new company
+     * @param string The name of the company, description sets the user as superuser
+     * @return bool True if successful, else false
+     */
     function createNewCompany($name, $description, $userId) {
         // Prepare, bind and execute the SQL statement
         $sql = 'INSERT INTO `company` (`id`, `name`, `description`) VALUES (NULL, ?, ?)';
@@ -37,11 +41,10 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    /*
-        Function to retrieve a company id from a user id.
-        Can be used to just check if a user is a part of any company as well.
-        Returns the companyid if found,
-        else it returns false.
+    /**
+     * Retrieves a company id from a user id.
+     * @param int The user id
+     * @return int|false The company id if successful, else false
     */
     function getCompanyIdFromUserId($userid) {
         // Ask database if logged in member is found in the company_management table
@@ -68,7 +71,11 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Returns true if user is a superuser of a company, else returns false
+    /**
+     * Checks if a user is a superuser in a company
+     * @param int The user id
+     * @return bool True if superuser is returned, else false
+     */
     function isUserCompanySuperuser($userId) {
         // Ask database if logged in member is found in the company_management table
         $sql = 'SELECT `superuser` FROM `company_management` WHERE `user_id` = ?';
@@ -97,7 +104,11 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Toggles whether a company user is a superuser or not. Returns true if successful, else returns false.
+    /**
+     * Updates a user's superuser status in a company
+     * @param int The user id
+     * @return bool True if superuser is returned, else false
+     */
     function toggleUserSuperuser($companyId, $userId) {
         $sql = '
             UPDATE `company_management`
@@ -120,12 +131,13 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    /*
-        Function to retrieve company name and description from a company id.
-        Can be used to just check if a company with id n exists as well.
-        Returns an array with the company name and description if found,
-        else it returns false.
-    */
+   
+    /**
+     * Retrieves company name and description from a company id.
+     * Can also be used to check if a company with id exists.
+     * @param int The company id
+     * @return array|false The company name and description if found, else false
+     */
     function getCompanyDetailsFromCompanyId($companyId) {
         $sql = 'SELECT `id`, `name`, `description` FROM `company` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -158,7 +170,11 @@ class DBHandlerCompany extends DBHandlerBase {
         return false;
     }
 
-    // Returns an array with company name and description if user is a part of a company. Else, returns false.
+    /**
+     * Retrieves company name and description from a user id.
+     * @param int The user id
+     * @return 
+     */
     function getCompanyDetailsFromUserId($userId) {
         $companyId = $this->getCompanyIdFromUserId($userId);
         return $companyDetails = $this->getCompanyDetailsFromCompanyId($companyId);
