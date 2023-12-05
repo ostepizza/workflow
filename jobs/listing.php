@@ -6,7 +6,14 @@ $dbhc = new DBHandlerCompany();
 $dbhl = new DBHandlerListing();
 
 $listingId = intval($_GET["id"]);
-$listing = $dbhl->getListing($listingId);
+if ($listing = $dbhl->getListing($listingId)) {
+    // Do nothing
+} else {
+    // Redirect if listing doesn't exist
+    header('Location: ../404.php');
+    exit();
+
+}
 
 if(($listing['published'] == 0) && ($dbhc->getCompanyIdFromUserId($_SESSION['user_id']) != $listing['companyId'])) {
     // Redirect if listing isn't published, and user is not a part of the company that owns the listing
@@ -46,12 +53,12 @@ global $listing;
         $listing['deadline'] = 'Apply before ' . date('d. M Y', strtotime($listing['deadline']));
     }
     
-    echo'
+    ?>
         <div class="row mt-5">
         <div class="col-md-7">
-            <h1>' . $listing["name"] . '</h1>
+            <h1><?php echo $listing["name"]; ?></h1>
             <hr>
-            <p>' . nl2br($listing["description"]) . '</p>
+            <p><?php echo nl2br($listing["description"]); ?></p>
         </div>
         <!-- Whitespace begin -->
         <div class="col-md-1">
@@ -63,22 +70,29 @@ global $listing;
                     About employer
                 </div>
                 <div class="card-body text-center">
-                    <h5 class="card-title">'. $listing["companyName"] .'</h5>
-                    <p>' . $listing["companyDescription"] . '</p>
+                    <h5 class="card-title"><?php echo $listing["companyName"]; ?></h5>
+                    <p><?php echo $listing["companyDescription"]; ?></p>
                     <hr>
-                    <b class="card-text">' . $listing["deadline"] . '</b>
-                    <p class="card-text">' . $listing["jobCategoryTitle"] . '</p>
-                    <hr>
+                    <b class="card-text"><?php echo $listing["deadline"]; ?></b>
+                    <p class="card-text"><?php echo $listing["jobCategoryTitle"]; ?></p>
 
-                    <div class="col-md-4 mx-auto">
+
+                    <?php
+                    if (isset($_SESSION['user_id'])) {
+                        ?>
+                        <hr>
+                        <div class="col-md-4 mx-auto">
                         <a class="btn btn-primary" href="../applications/new.php?listingId=' . $listing['id'] . '">Apply for job</a>
-                    </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
+                    
                 </div>
             </div>
         </div>
-    </div>';
+    </div>
         
-    ?>
 <?php
 
 }

@@ -87,9 +87,6 @@ if (isset($_POST['deleteListing'])) {
         // If the form validation failed, tell the user what went wrong.
         $feedbackForUser = $validator->printAllFeedback();
         $feedbackColor = 'danger';
-        foreach ($_POST as $key => $value) {
-            $listingFailed[$key] = $value;
-        }
     }
 }
 

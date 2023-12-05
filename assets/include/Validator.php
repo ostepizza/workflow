@@ -237,7 +237,7 @@ class Validator {
 
     //Validates the title when a user is writing a description on job applications
     function validateJobApplicationDescription($description) {
-        $this->validateGenericField($description, 'Description', 6500);
+        $this->validateGenericField($description, 'Description', 5000);
     }
 
     /*

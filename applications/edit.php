@@ -2,7 +2,8 @@
 /* 
     Edit a job application, which is only accessible to the user who created the application.
     It is accessed through a get request for the application id. 
-    Necessary checks should be made to ensure that the user is the owner of the application.
+    Necessary checks are be made to ensure that the user is the owner of the application.
+    If the deadline for the listing has passed, the user is not able to edit the application and is redirected.
 */
 include_once '../assets/include/Validator.php';
 $validator = new Validator();
@@ -15,7 +16,7 @@ $dbhc = new DBHandlerCompany();
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
-
+// If the application has been updated
 if(isset($_GET["updatedApplication"])) {
     $feedbackForUser .= 'Job application has been updated.<br>';
     $feedbackColor = 'success';
@@ -49,12 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $validator->validateJobApplicationDescription($description);
     
     if ($validator->valid) {
+        //If the validation is successful, try to update the application
 
-        //TO-DO: get an update function for job applications (Values and current method used are only placeholders)
         if($dbha->updateApplicationContent($applicationId, $title, $description)){
-
             //After updating the application, send it if the user has requested to do so.
+
             if (isset($_POST['applicationSend'])) {
+                // If the user has requested to send the application, send it and redirect to the view page
                 if ($dbha->sendApplication($applicationId)) {
                     header("Location: view.php?id=$applicationId&sentApplication");
                     exit();
@@ -64,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             }
 
+            // Refresh the page to show the updated application
             header("Location: edit.php?id=$applicationId&updatedApplication");
             exit();
 
@@ -77,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// In case company description is missing, set it to a default value
 $application['company_description'] = (isset($application['company_description']) && $application['company_description'] !== '') ? $application['company_description'] : 'No description';
 
 function display() {
@@ -158,6 +162,9 @@ global $application;
                             - Your CV (if uploaded)<br>
                             - Your competence<br>
                             - Your application title & text<br>
+                            <br>
+                            Any information you may update regarding your profile, will be updated for the company as well.<br>
+                            <br>
                         </p>
                     </div>
                     <div class="modal-footer">

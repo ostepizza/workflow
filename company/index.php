@@ -10,6 +10,8 @@ function display() {
 include_once '../assets/include/DBHandler.php';
 $dbhc = new DBHandlerCompany();
 $dbhl = new DBHandlerListing();
+$dbha = new DBHandlerApplication();
+$dbhs = new DBHandlerStatistics();
 
 // If the page is loaded with a get request, display a message depending on the request
 if(!empty($_GET)){
@@ -41,7 +43,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
     $listings = $dbhl->getAllCompanyListings($companyId);
 
     // Retrieve listing statistics for company 
-    $statistics = $dbhl->getCompanyStatistics($companyId);
+    $statistics = $dbhs->getCompanyStatistics($companyId);
 
     // Display the company dashboard:
 ?>
@@ -57,8 +59,13 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
         <div class="col-md-7">
             <?php
             echo '<h2>Job listings ('.count($listings).'):</h2><hr>';
+            // Display all listings
             if ($listings) {
                 foreach($listings as $listing) {
+                    // Retrieve the number of applications the listing has received
+                    $applicationCount = $dbha->getListingApplicationCount($listing['id']);
+
+                    // Set up some default info if the listing is missing some
                     $listing['name'] = $listing['name'] ?? 'No title';
     
                     $listing['description'] = $listing['description'] ?? '<i>This listing has no description</i>';
@@ -76,12 +83,13 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
     
                     $listing['category_title'] = $listing['category_title'] ?? 'No category';
     
+                    // Display the listing
                     echo '
                     <div class="card mb-3">
                         <div class="card-header">
                             <div class="row">
                                 <div class="col-md-9">
-                                    <b>' . $listing['name'] . '</b> ('.$listing['views'].' views)
+                                    <b>' . $listing['name'] . '</b> ('.$listing['views'].' views, '.$applicationCount.' applications)
                                 </div>
                                 <div class="col-md-3">
                                     <p class="text-end mb-0">' . $listing['published'] . '</p>
@@ -98,7 +106,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                                     ' . $listing['category_title'] . '
                                 </div>
                                 <div class="col-md-3">
-                                    <a href="../applications/received.php/?id='.$listing["id"].'"><button type="button" class="btn btn-primary w-100">View applications</button></a>
+                                    <a href="../applications/received.php?id='.$listing["id"].'"><button type="button" class="btn btn-primary w-100">View applications</button></a>
                                     <a href="../jobs/edit.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Edit listing</button></a>
                                     <a href="../jobs/listing.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Preview listing</button></a>
                                 </div>
@@ -108,6 +116,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                     ';
                 }
             } else {
+                // If there are no listings, display a message
                 echo '<p>There are no job listings.</p>';
             }
             
@@ -131,6 +140,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                 <hr>
                 <p>
                     <?php
+                    echo 'Received applications: ' . $statistics['received_applications'] . '<br>';
                     echo 'Published listings: ' . $statistics['published_listings'] . '<br>';
                     echo 'Unpublished listings: ' . $statistics['unpublished_listings'] . '<br>';
                     echo 'Total views: ' . $statistics['total_views'] . '<br>';
