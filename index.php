@@ -1,6 +1,12 @@
 <?php include_once 'assets/include/template.php';
 
+// Include and establish connection with DB
+include_once 'assets/include/DBHandler.php';
+$dbhs = new DBHandlerStatistics();
+$dbhc = new DBHandlerCompany();
+
 function display() {
+global $dbhs, $dbhc;
 ?>
 <!-- Content here -->
 <?php
@@ -19,14 +25,58 @@ if(isset($_GET['loggedout'])) {
 }
 ?>
 <div class="row mt-5">
-    <div class="col-md-7">
+    <div class="col-md-8">
         <h1>Welcome to Workflow!</h1>
-        <p>We currently have X job listings from X companies in our system, and X applications sent to employers!</p>
-        <br>
-        <p>Some personal stats if logged in</p>
+        <p>We currently have <b><?php echo $dbhs->getSystemPublishedListingsCount(); ?> job listings</b> from <b><?php echo $dbhs->getSystemTotalCompanies(); ?> companies</b> in our system, and <b><?php echo $dbhs->getSystemTotalApplicationsSent(); ?> applications</b> sent to employers!</p>
+        <?php
+        if (isset($_SESSION['user_id'])) {
+            ?>
+            <br>
+            <hr>
+            <br>
+            <div class="text-center">
+                <p>
+                    <span class="h3">
+                        You have sent <b><?php echo $dbhs->getUserTotalApplicationsSent($_SESSION['user_id']) ?> applications</b> to employers
+                    </span>
+                </p>
+            </div>
+            <?php
+            if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])) {
+                $companyDetails = $dbhc->getCompanyDetailsFromCompanyId($companyId);
+                $companyStatistics = $dbhs->getCompanyStatistics($companyId);
+                echo '
+                <br>
+                <hr>
+                <br>
+                <div class="text-center">
+                        <span class="h1">'.$companyDetails['companyName'].' statistics:</span><br>
+                    <div class="row mt-5">
+                        <div class="col-md-4">
+                            <div class="card p-5">
+                                Currently <b>' . $companyStatistics['published_listings'] . ' job listings</b> published<br>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-5">
+                                Received <b>' . $companyStatistics['received_applications'] . ' applications</b> from job seekers<br>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-5">
+                                <b>' . $companyStatistics['total_views'] . ' views</b> on all published job listings<br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ';
+            }
+        }
+        ?>
+
     </div>
     
-    <div class="col-md-2">
+    <div class="col-md-1">
     </div>
     
     <div class="col-md-3">
