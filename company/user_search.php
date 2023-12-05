@@ -86,9 +86,7 @@ global $searched;
                             <div class="row">
                                 <div class="col-md-2    ">';
                                     if ($search['picture']) {
-                                        $base64Image = base64_encode($search['picture']);
-                                        $pictureData = "data:image/jpeg;base64," . $base64Image;
-                                        echo '<img src="' . $pictureData . '" alt="Profile picture of '.$search['first_name'].' '.$search['last_name'].'" class="img-fluid rounded border border-secondary">';
+                                        echo '<img src="../assets/img/user/' . $search['picture'] . '" alt="Profile picture of '.$search['first_name'].' '.$search['last_name'].'" class="img-fluid rounded border border-secondary">';
                                     } else {
                                         echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded border border-secondary">';
                                     }
