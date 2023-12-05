@@ -135,6 +135,10 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         <?php 
         if ($applications) {
             foreach ($applications as $application) {
+                if ($application['sent'] == 0 && $application['deadline'] < date('Y-m-d')) {
+                    continue;
+                } 
+
                 if ($application['sent'] == 1) {
                     $status = '<span class="badge bg-success">Sent</span>';
                 } else {
@@ -162,10 +166,14 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
                             <div class="col-md-2">
                                 <div class="row">
                                     <div class="col-md-6 px-1">
-                                        <a href="../applications/edit.php?id=1" class="btn btn-secondary w-100" role="button">Edit</a>
+                                        <?php 
+                                            if ($application['sent'] == 0) {
+                                                echo '<a href="../applications/edit.php?id=' . $application['id'] . '" class="btn btn-secondary w-100" role="button">Edit</a>';
+                                            }
+                                        ?>
                                     </div>
                                     <div class="col-md-6 px-1">
-                                        <a href="../applications/view.php?id=1" class="btn btn-primary w-100 ml-2" role="button">View</a>
+                                        <a href="../applications/view.php?id=<?php echo $application['id']; ?>" class="btn btn-primary w-100 ml-2" role="button">View</a>
                                     </div>
                                 </div>
                                 

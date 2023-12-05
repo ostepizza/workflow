@@ -1133,7 +1133,10 @@ class DBHandlerApplication extends DBHandlerBase {
 
     // Retrieves an application by application id. Returns an array with the application if successful, else returns false.
     function getApplication($applicationId) {
-        $sql = 'SELECT ja.*, u.first_name, u.last_name, u.email, u.telephone, u.location, u.birthday, u.picture, u.cv, u.competence, c.id as company_id, c.name as company_name, jl.name as listing_name
+        $sql = 'SELECT ja.*, 
+            u.first_name, u.last_name, u.email, u.telephone, u.location, u.birthday, u.picture, u.cv, u.competence, 
+            c.id as company_id, c.name as company_name, c.description as company_description, 
+            jl.name as listing_name
             FROM `job_application` ja
             JOIN `user` u ON ja.user_id = u.id
             JOIN `job_listing` jl ON ja.job_listing_id = jl.id
@@ -1147,6 +1150,36 @@ class DBHandlerApplication extends DBHandlerBase {
             $application = $result->fetch_assoc();
             $stmt->close();
             return $application;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function updateApplicationContent($applicationId, $title, $description) {
+        $sql = 'UPDATE `job_application` SET `title` = ?, `text` = ? WHERE `job_application`.`id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ssi', $title, $description, $applicationId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function sendApplication($applicationId) {
+        $sql = 'UPDATE `job_application` SET `sent` = 1, `sent_datetime` = NOW() WHERE `job_application`.`id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $applicationId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
         } else {
             $stmt->close();
             return false;

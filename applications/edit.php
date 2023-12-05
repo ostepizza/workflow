@@ -16,24 +16,60 @@ $feedbackForUser = NULL;
 $feedbackColor = "danger";
 
 
-if(isset($_GET["sentApplication"])) {
-    $feedbackForUser .= 'Job application has been sent.<br>';
+if(isset($_GET["updatedApplication"])) {
+    $feedbackForUser .= 'Job application has been updated.<br>';
     $feedbackColor = 'success';
 }
 
-//Validation and GET request for when the send button is pressed
-if (isset($_POST["applicationUpdate"])) {
-    $validator->validateJobApplicationTitle($_POST["title"]);
-    $validator->validateJobApplicationDescription($_POST["description"]);
+// Retrieve the application id from the get request
+$applicationId = $_GET["id"];
+
+// Retrieve application
+if ($application = $dbha->getApplication($applicationId)) {
+    // If an application is found, check the ownership
+
+    if ($application['user_id'] != $_SESSION['user_id'] || $application['sent'] == 1) {
+        // If the user is not the owner of the application, redirect to 403
+        header('Location: ../403.php');
+        exit();
+    } 
+
+} else {
+    // If no application is found, redirect to 403 to not give away information about the existence of any applications
+    header('Location: ../403.php');
+    exit();
+}
+
+// If either of the buttons are pressed, update the application
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $title = strip_tags($_POST['title']);
+    $description = strip_tags($_POST['description']);
+
+    $validator->validateJobApplicationTitle($title);
+    $validator->validateJobApplicationDescription($description);
     
     if ($validator->valid) {
 
         //TO-DO: get an update function for job applications (Values and current method used are only placeholders)
-        if($dbha->createNewApplication(1, 1)){
-            header("edit.php?sentApplication");
+        if($dbha->updateApplicationContent($applicationId, $title, $description)){
+
+            //After updating the application, send it if the user has requested to do so.
+            if (isset($_POST['applicationSend'])) {
+                if ($dbha->sendApplication($applicationId)) {
+                    header("Location: view.php?id=$applicationId&sentApplication");
+                    exit();
+                } else {
+                    $feedbackForUser = 'An error occurred while sending the application.';
+                    $feedbackColor = 'danger';
+                }
+            }
+
+            header("Location: edit.php?id=$applicationId&updatedApplication");
             exit();
+
         } else {
-            echo "Something went wrong";
+            $feedbackForUser = 'An error occurred while updating the application.';
+            $feedbackColor = 'danger';
         }
     } else {
         $feedbackForUser = $validator->printAllFeedback();
@@ -41,68 +77,97 @@ if (isset($_POST["applicationUpdate"])) {
     }
 }
 
+$application['company_description'] = (isset($application['company_description']) && $application['company_description'] !== '') ? $application['company_description'] : 'No description';
 
-function display()
-{
+function display() {
+global $application;
 ?>
-    <div class="row mt-5">
-        <div class="col-md-4">
-        <button class="btn btn-secondary">Go back</button>
-        </div>
-        <div class="col-md-4">
-            <h1>Application to blabla</h1>
-        </div>
-    </div>
-    <form action="" method="post">
-    <div class="row mt-5">
-        <div class="col-md-8">
-            <div class="form-group">
-                <input type="text" name="title" class="form-control" placeholder="..."<?php  ?>>
-            </div>
-        </div>
-    </div>
+
+    <a href="../user/index.php" class="btn btn-secondary mt-3" role="button">Go to application overview</a><br>
+
     <div class="row mt-3">
-        <div class="col-md-8">
-            <div class="form-group">
-                <textarea class="form-control" name="description" rows="16" placeholder="Write here..."></textarea>
-            </div>
+        <div class="col-md-12">
+            <span class="h1">Application to <?php echo $application['company_name']?></span> <span class="badge bg-warning">Draft</span><br>
+            <span><i>Regarding listing <?php echo $application['listing_name']?></i></span>
         </div>
-        <div class="col-md-1">
-        </div>
-        <div class="col-md-3">
-            <div class="card mb-3">
-                <div class="card-header text-center">
-                    About employer
-                </div>
-                <div class="card-body text-center">
-                    <h5 class="card-title">Sample Text</h5>
-                    <p>Sample text</p>
-                    <p>Sample text</p>
-                    <p>Sample text</p>
-                    <hr>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            By clicking this, you verify that you've read through the application atleast once. *
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Other terms that ive decided to make to a textbox >:D *
-                        </label>
-                    </div>
-                    <hr>
-                    <div class="col-md-7 mx-auto">
-                        <button class="btn btn-primary" type="submit" name="applicationUpdate">Send application</button>
-                    </div>
-                    </form>
+    </div>
+
+    <form action="" method="post">
+        <div class="row mt-3">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label for="name">Application Title</label>
+                    <input type="text" name="title" class="form-control" placeholder="Please enter a title" <?php if(!empty($application['title'])) { echo 'value="' . $application['title'] . '"';} ?>>
                 </div>
             </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label for="description">Application Description</label>
+                    <textarea class="form-control" name="description" rows="16" placeholder="Describe why you're the best for the job..."><?php if(!empty($application['text'])) { echo $application['text'];} ?></textarea>
+                </div>
+            </div>
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-3">
+                <div class="card mb-3">
+                    <div class="card-header text-center">
+                        About employer
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-center"><?php echo $application['company_name'];?></h5>
+                        <p>
+                            <?php
+                            echo $application['company_description'];
+                            ?>
+                        </p>
+                        <hr>
+                        <p>
+                            By sending this application, you agree to share <a href="#" data-bs-toggle="modal" data-bs-target=".modalInfoToShare">the following information</a> with the company.
+                        </p>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-success w-100" type="submit" name="applicationUpdate">Save</button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-warning w-100" type="submit" name="applicationSend">Save & send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="modal fade modalInfoToShare" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Info that will be shared with company <?php echo $application['company_name']?></h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            By sending this application, you agree to share the following information with the company:<br>
+                            - Your full name<br>
+                            - Your email address<br>
+                            - Your phone number (if set)<br>
+                            - Your location (if set)<br>
+                            - Your profile picture (if uploaded)<br>
+                            - Your CV (if uploaded)<br>
+                            - Your competence<br>
+                            - Your application title & text<br>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Dismiss</button>
+                    </div>
+                </div>
         </div>
     </div>
 
 <?php
 }
 
-makePage('display', 'Job listings');
+makePage('display', 'Job listings', $feedbackForUser, $feedbackColor, requireLogin: true);

@@ -10,6 +10,14 @@ include_once '../assets/include/DBHandler.php';
 $dbhc = new DBHandlerCompany();
 $dbha = new DBHandlerApplication();
 
+$feedbackForUser = NULL;
+$feedbackColor = 'danger';
+
+if (isset($_GET['sentApplication'])) {
+    $feedbackForUser = 'Application has successfully been sent.';
+    $feedbackColor = 'success';
+}
+
 // Retrieve the application id from the get request
 $applicationId = $_GET["id"];
 
@@ -127,5 +135,5 @@ global $application, $status;
 <?php
 
 }
-makePage('display', 'View Application', requireLogin: true);
+makePage('display', 'View Application', $feedbackForUser, $feedbackColor, requireLogin: true);
 ?>
