@@ -64,14 +64,14 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
     <div class="col-md-2">
         <?php 
         if ($userInfo['picture']) {
-            $base64Image = base64_encode($userInfo['picture']);
-            $pictureData = "data:image/jpeg;base64," . $base64Image;
-            echo '<img src="' . $pictureData . '" alt="Your profile picture" class="img-fluid rounded border border-secondary">';
+            echo '<img src="../assets/img/user/' . $userInfo['picture'] . '" class="img-fluid rounded border border-secondary" alt="Your profile picture">';
         } else {
             echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded border border-secondary">';
         }
         ?>
-        <a href="edit.php" class="btn btn-primary active mt-3" role="button">Edit profile</a><br>
+        <a href="user_files.php" class="btn btn-primary active mt-3 w-100" role="button">Edit profile picture</a><br>
+        <a href="edit.php" class="btn btn-primary active mt-3 w-100" role="button">Edit profile</a><br>
+        
         <?php
         if($userInfo['cv'] != NULL) {
             // Button is currently non functional

@@ -111,9 +111,7 @@ global $application, $status;
             <div class="card-header text-center">
                 <?php
                 if ($application['picture']) {
-                    $base64Image = base64_encode($application['picture']);
-                    $pictureData = "data:image/jpeg;base64," . $base64Image;
-                    echo '<img src="' . $pictureData . '" alt="Profile picture of '.$application['first_name'].' '.$application['last_name'].'" class="img-fluid rounded border border-secondary w-50 m-2">';
+                    echo '<img src="../assets/img/user/'.$application['picture'].'" alt="The default profile picture" class="img-fluid rounded border border-secondary w-50 m-2">';
                 } else {
                     echo '<img src="../assets/img/user/default.jpg" alt="The default profile picture" class="img-fluid rounded border border-secondary w-50 m-2">';
                 }
