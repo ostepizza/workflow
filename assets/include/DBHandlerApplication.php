@@ -106,6 +106,10 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
+     /** 
+     * Updates either an empty or already filled application. Doesn't send the application
+     * @param int ID for application that gets updated
+     */
     function updateApplicationContent($applicationId, $title, $description) {
         $sql = 'UPDATE `job_application` SET `title` = ?, `text` = ? WHERE `job_application`.`id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -121,6 +125,11 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
+    /** 
+     * Updates either an empty or already filled application with a date for when it was sent
+     * @param int ID for application that gets updated and sent
+     * Returns true if successful
+     */
     function sendApplication($applicationId) {
         $sql = 'UPDATE `job_application` SET `sent` = 1, `sent_datetime` = NOW() WHERE `job_application`.`id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -136,6 +145,12 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
+
+    /**
+     * Checks an application up to a company
+     * @param int IDs for application and company 
+     * Returns true if successful
+     */
     function checkApplicationIdAndCompany($applicationId, $companyId) {
         $sql = 'SELECT ja.*, jl.company_id
             FROM `job_application` ja
@@ -158,7 +173,11 @@ class DBHandlerApplication extends DBHandlerBase {
             return false;
         }
     }
-
+    /**
+     * Sets an application as archived in DB
+     * @param int ID for application that gets archived
+     * Returns true if successful
+     */
     function toggleApplicationArchived($applicationId) {
         $sql = '
             UPDATE `job_application`
@@ -181,6 +200,11 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
+    /**
+     * Sets an application as pinned in the DB
+     * @param int The id of the application that is going to be set as pinned
+     * Returns true if pinned successfully
+    */
     function toggleApplicationPinned($applicationId) {
         $sql = '
             UPDATE `job_application`
@@ -203,6 +227,7 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
+    //Get the counter over how many applications there are in a listing
     function getListingApplicationCount($listingId) {
         $sql = 'SELECT COUNT(*) as applications_received FROM `job_application` WHERE `job_listing_id` = ?';
         $stmt = $this->conn->prepare($sql);

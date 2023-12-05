@@ -173,6 +173,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
+    /**
+     * Function to see if a listing deadline has not passed
+     * @param int Id of the listing to be checked
+     * @return bool either true or false depending the deadline has passed
+     */
     function isListingDeadlineNotPassed($listingId) {
         $sql = 'SELECT `deadline` FROM `job_listing` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -309,6 +314,12 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
+
+    /**
+     * Gets everything from a specific category
+     * @param int Id for the category in the DB
+     * @return bool True or false depending on if the id exist for the category
+     */
     function checkCategoryId($categoryId) {
         $sql = 'SELECT * FROM `job_category` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
