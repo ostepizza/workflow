@@ -68,16 +68,16 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
         } else {
             echo '<img src="../assets/img/user/default.jpg" alt="The default user profile picture" class="img-fluid rounded border border-secondary">';
         }
-        ?>
-        <a href="user_files.php" class="btn btn-primary active mt-3 w-100" role="button">Edit profile picture</a><br>
-        <a href="edit.php" class="btn btn-primary active mt-3 w-100" role="button">Edit profile</a><br>
-        
-        <?php
+
         if($userInfo['cv'] != NULL) {
             // Button is currently non functional
-            echo '<a href="#" class="btn btn-primary active mt-3" role="button">Open resume</a>';
+            echo '<a href="../assets/pdf/user/'.$userInfo['cv'].'" class="btn btn-primary mt-3 w-100" role="button">Open resume</a>';
         }
         ?>
+        <a href="user_files.php" class="btn btn-secondary mt-3 w-100" role="button" data-bs-placement="top" data-bs-toggle="tooltip" title="Your user files are your profile image and resume PDF.">Edit user files</a><br>
+        <a href="edit.php" class="btn btn-secondary mt-3 w-100" role="button">Edit profile</a><br>
+        
+        
     </div>
 
     <div class="col-md-1"></div>

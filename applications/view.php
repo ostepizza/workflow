@@ -118,6 +118,11 @@ global $application, $status;
                 ?>
                 <br>
                 <span class="h5"><?php echo $application['first_name'] . ' ' . $application['last_name'];?></span>
+                <?php
+                if (!empty($application['cv'])) {
+                    echo '<br><a href="../assets/pdf/user/'.$application['cv'].'" class="btn btn-primary mt-3" role="button">Open resume</a>';
+                }
+                ?>
             </div>
             <div class="card-body">
                 <p class="card-text h6 text-center">Competence</p>
