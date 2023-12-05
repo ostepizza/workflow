@@ -13,13 +13,18 @@ $dbha = new DBHandlerApplication();
 $feedbackForUser = NULL;
 $feedbackColor = 'danger';
 
-if (isset($_GET['sentApplication'])) {
-    $feedbackForUser = 'Application has successfully been sent.';
-    $feedbackColor = 'success';
-}
+
 
 // Retrieve the application id from the get request
 $applicationId = $_GET["id"];
+
+if (isset($_GET["sentApplication"])) {
+    $feedbackForUser = 'Application has successfully been sent.';
+    $feedbackColor = 'success';
+    $backBtn = '<a href="../user/index.php" class="btn btn-secondary mt-5" role="button">Go to application overview</a><br>';
+} else {
+    $backBtn = '<a href="javascript:history.back()" class="btn btn-secondary mt-5" role="button">Back</a><br>';
+}
 
 // Set up empty status
 $status = NULL;
@@ -50,14 +55,16 @@ if ($application = $dbha->getApplication($applicationId)) {
     exit();
 }
 
+
 $application['title'] = (isset($application['title']) && $application['title'] !== '') ? $application['title'] : 'Missing title';
 $application['text'] = (isset($application['text']) && $application['text'] !== '') ? $application['text'] : 'Missing text';
 $application['competence'] = (isset($application['competence']) && $application['competence'] !== '') ? $application['competence'] : 'Missing competence';
 
 function display() {
-global $application, $status;
+global $application, $status, $backBtn;
+
+echo $backBtn;
 ?>
-<a href="javascript:history.back()" class="btn btn-secondary mt-5" role="button">Back</a><br>
 <div class="row mt-3">
     <div class="col-md-12">
         <span class="h1">Application</span> <?php echo $status; ?>
@@ -120,7 +127,7 @@ global $application, $status;
                 <span class="h5"><?php echo $application['first_name'] . ' ' . $application['last_name'];?></span>
                 <?php
                 if (!empty($application['cv'])) {
-                    echo '<br><a href="../assets/pdf/user/'.$application['cv'].'" class="btn btn-primary mt-3" role="button">Open resume</a>';
+                    echo '<br><a href="../assets/pdf/user/'.$application['cv'].'" class="btn btn-primary mt-3" role="button" target=”_blank”>Open resume</a>';
                 }
                 ?>
             </div>

@@ -26,7 +26,7 @@ class DBHandlerApplication extends DBHandlerBase {
             JOIN `job_listing` jl ON ja.job_listing_id = jl.id
             JOIN `company` c ON jl.company_id = c.id
             WHERE ja.`user_id` = ? 
-            ORDER BY jl.`published` DESC, jl.`deadline` IS NULL ASC, jl.`deadline` ASC';
+            ORDER BY ja.`sent_datetime` IS NULL DESC, ja.`sent_datetime` DESC';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $userId);
 
@@ -213,6 +213,38 @@ class DBHandlerApplication extends DBHandlerBase {
             $applicationsReceived = $result->fetch_assoc()['applications_received'];
             $stmt->close();
             return $applicationsReceived;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function deleteApplication($applicationId) {
+        $sql = 'DELETE FROM `job_application` WHERE `job_application`.`id` = ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $applicationId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function deleteAnyDraftsPastDeadline($userId) {
+        $sql = 'DELETE ja FROM `job_application` ja
+            JOIN `job_listing` jl ON ja.job_listing_id = jl.id
+            WHERE ja.`user_id` = ? AND ja.`sent` = 0 AND jl.`deadline` < CURDATE()';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
         } else {
             $stmt->close();
             return false;

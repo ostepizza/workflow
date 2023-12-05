@@ -43,6 +43,17 @@ if ($application = $dbha->getApplication($applicationId)) {
 
 // If either of the buttons are pressed, update the application
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['applicationDelete'])) {
+        // If the user has requested to delete the application, delete it and redirect to the user overview
+        if ($dbha->deleteApplication($applicationId)) {
+            header("Location: ../user/index.php?deletedApplication");
+            exit();
+        } else {
+            $feedbackForUser = 'An error occurred while deleting the application.';
+            $feedbackColor = 'danger';
+        }
+    }
+
     $title = strip_tags($_POST['title']);
     $description = strip_tags($_POST['description']);
 
@@ -133,7 +144,8 @@ global $application;
                         <hr>
                         <div class="row">
                             <div class="col-md-6">
-                                <button class="btn btn-success w-100" type="submit" name="applicationUpdate">Save</button>
+                                <button class="btn btn-success w-100 mb-2" type="submit" name="applicationUpdate">Save</button>
+                                <a href="#" data-bs-toggle="modal" data-bs-target=".modalDeleteApplication" class="btn btn-danger w-100 mb-2">Delete</a>
                             </div>
                             <div class="col-md-6">
                                 <button class="btn btn-warning w-100" type="submit" name="applicationSend">Save & send</button>
@@ -169,6 +181,28 @@ global $application;
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Dismiss</button>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <div class="modal fade modalDeleteApplication" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete application</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p><span class="text-danger"><b>WARNING! This is a destructive action!</b></span></p>
+                        <p>By proceeding, the current application will be deleted. This action <b>CAN NOT BE REVERSED.</b></p>
+                    </div>
+                    <div class="modal-footer">
+                        <form action="" method="post" class="row row-cols-lg-auto align-items-center">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-danger" name="applicationDelete">Delete</button>
+                            </div>
+                        </form>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </div>
         </div>

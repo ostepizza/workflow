@@ -18,6 +18,7 @@ $feedbackColor = "danger";
 if(!empty($_SESSION['user_id'])) {
     $userInfo = $dbhu->selectAllUserInfoByUserId($_SESSION['user_id']);
     $userInfo = array_merge($userInfo, $dbhc->getCompanyDetailsFromUserId($_SESSION['user_id']));
+    $dbha->deleteAnyDraftsPastDeadline($_SESSION['user_id']);
     $applications = $dbha->getAllUserApplications($_SESSION['user_id']);
 }
 
@@ -26,14 +27,17 @@ if (isset($_GET['toggleSearchable'])) {
     header('Location: index.php?updatedSearchable');
 } else if (isset($_GET['updatedSearchable'])) {
     if ($userInfo['searchable']) {
-        $feedbackForUser = 'You are now searchable to employers.';
+        $feedbackForUser = 'You are now searchable to employers.<br>';
         $feedbackColor = 'success';
     } else {
-        $feedbackForUser = 'You are no longer searchable to employers.';
+        $feedbackForUser = 'You are no longer searchable to employers.<br>';
     }
 } else if (isset($_GET["updatedCompetence"])) {
-    $feedbackForUser = 'Your competence has been updated';
+    $feedbackForUser = 'Your competence has been updated.<br>';
     $feedbackColor  = 'success';
+} else if (isset($_GET["deletedApplication"])) {
+    $feedbackForUser = 'The application has been deleted.<br>';
+    $feedbackColor  = 'warning';
 }
 
 if(isset($_POST["updateComp"])) {
@@ -71,7 +75,7 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
 
         if($userInfo['cv'] != NULL) {
             // Button is currently non functional
-            echo '<a href="../assets/pdf/user/'.$userInfo['cv'].'" class="btn btn-primary mt-3 w-100" role="button">Open resume</a>';
+            echo '<a href="../assets/pdf/user/'.$userInfo['cv'].'" class="btn btn-primary mt-3 w-100" role="button" target=”_blank”>Open resume</a>';
         }
         ?>
         <a href="user_files.php" class="btn btn-secondary mt-3 w-100" role="button" data-bs-placement="top" data-bs-toggle="tooltip" title="Your user files are your profile image and resume PDF.">Edit user files</a><br>
@@ -176,11 +180,8 @@ $birthday = ($userInfo['birthday'] !== NULL) ? date('d. M Y', strtotime($userInf
                                         <a href="../applications/view.php?id=<?php echo $application['id']; ?>" class="btn btn-primary w-100 ml-2" role="button">View</a>
                                     </div>
                                 </div>
-                                
-                                
                             </div>
                         </div>
-                        
                     </div>
                 </div>
                 <?php
