@@ -4,12 +4,17 @@ include("connection.php");
 class DBHandlerBase {
     protected $conn; //DB connection
 
-    // Create a connection as the object is created
+    /**
+     * Constructor for the DBHandlerBase class
+     * It creates a connection to the database
+     */
     function __construct() {
         $this->conn = $this->createDBConnection(); // Connects to the database
     }
 
-    // Creates a connection to the Database
+    /**
+     * Creates a connection to the database
+     */
     protected function createDBConnection() {
         $serverip = "localhost";
         $username = "root";

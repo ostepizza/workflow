@@ -1,9 +1,11 @@
 <?php
 class DBHandlerUser extends DBHandlerBase {
-    /*
-        // Checks if an email is already present in the db. Returns true if it finds an email, and returns false if email is available.
-        // Optional parameter userid can be used to exclude a user from the search, in case an email is being updated.
-    */
+    /**
+     * Checks if an email is already present in the database.
+     * @param string $email the email to check
+     * @param int $userId (optional) the user id to exclude from the search
+     * @return bool true if the email is taken, else false
+     */
     function isEmailTaken($email, $userId = NULL) {
         // Make sure the email is always lowercase, for consistency
         $email = strtolower($email);
@@ -41,10 +43,11 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    /*
-        Select userdata from DB from an email. Returns an array with the userdata if successful, else returns false.
-        Normally intended to verify login details and set a user ID in Session.
-    */
+    /**
+     * Selects user data from the database based on an email.
+     * @param string $email the email to search for
+     * @return array|false an array with user data if successful, else false
+     */
     function selectUserByEmail($email) {
         // Make sure the email is always lowercase, for consistency
         $email = strtolower($email);
@@ -78,11 +81,12 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    /*
-        Retrieve all data fields for a user in the database. Used to display profile information for a specific user,
-        like on Profile View or viewing a sent Job Application.
-        Returns an array of information if user ID exists, else it returns false.
-    */
+    /**
+     * Retrieve all data fields for a user in the database. Used to display profile information for a specific user,
+     * like on Profile View or viewing a sent Job Application.
+     * @param int $userId the user id to search for
+     * @return array|false an array with user data if successful, else false
+     */
     function selectAllUserInfoByUserId($userId) {
 
         $sql = 'SELECT `email`, `password`, `first_name`, `last_name`, `telephone`, `location`, `birthday`, `picture`, `cv`, `searchable`, `competence` FROM `user` WHERE `id` = ?';
@@ -125,7 +129,11 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Retrieves a users ID from an email
+    /**
+     * Retrieves a users ID from an email
+     * @param string $email the email to search for
+     * @return int|false the user id if successful, else false
+     */
     function getUserIdByEmail($email) {
         $sql = 'SELECT `id` FROM `user` WHERE `email` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -149,7 +157,11 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Retrieves a users hashed password from the database
+    /**
+     * Retrieves a users hashed password from the database
+     * @param int $userId the user id to search for
+     * @return string|false the hashed password if successful, else false
+     */
     function getUserPasswordByUserId($userId) {
         $sql = 'SELECT `password` FROM `user` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -173,7 +185,12 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Compares a plain-text password with a hashed password using the PHP function password_verify(). Returns true if passwords are same.
+    /**
+     * Compares a plain-text password with a hashed password using the PHP function password_verify(). Returns true if passwords are same.
+     * (This function is a wrapper for password_verify() to make it easier to use in other functions.)
+     * @param string $inputPassword the plain-text password to compare
+     * @param string $hashedPassword the hashed password to compare
+     */
     function verifyPassword($inputPassword, $hashedPassword) {
         if (password_verify($inputPassword, $hashedPassword)) {
             return true;
@@ -182,7 +199,12 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Used to log in and store session data. Checks if email exists, then compares passwords. If successful it returns nothing, but if somethings wrong it returns false.
+    /**
+     * Logs in a user and stores session data. Checks if email exists, then compares passwords.
+     * @param string $email the email to check
+     * @param string $plainPassword the plain-text password to compare
+     * @return bool true if successful login, else false
+     */
     function logInUser($email, $plainPassword) {
         // Since selectUserByEmail either returns false or an array, we can first make sure that it doesn't return false:
         if ($user_details = $this->selectUserByEmail($email)) {
@@ -204,7 +226,14 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Adds a user to the DB. Returns true if successful, else false.
+    /**
+     * Adds a user to the database
+     * @param string $email the email to add
+     * @param string $plainPassword the plain-text password to add
+     * @param string $firstname the first name to add
+     * @param string $lastname the last name to add
+     * @return bool true if successful, else false
+     */
     function addUserToDB($email, $plainPassword, $firstname, $lastname) {
         // Make sure the email is always lowercase, for consistency
         $email = strtolower($email);
@@ -234,7 +263,13 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Update a field using a user id input, what field to update, and what to update it to
+    /**
+     * Updates a field in the user table
+     * @param int $userId the user id to update
+     * @param string $field the field to update
+     * @param string $detail the detail to update the field to
+     * @return bool true if successful, else false
+     */
     function updateDetail($userId, $field, $detail) {
         //UPDATE `user` SET `'.$field.'` = ? WHERE `id` = ?;
         // Prepare and execute sql statement to add user with supplied info
@@ -252,27 +287,52 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    // Update email field of a user
+    /**
+     * Updates the email field of a user
+     * @param int $userId the user id to update
+     * @param string $email the email to update to
+     * @return bool true if successful, else false
+     */
     function updateEmail($userId, $email) {
         return $this->updateDetail($userId, 'email', $email);
     }
 
-    // Update first_name field of a user
+    /**
+     * Updates the first name field of a user
+     * @param int $userId the user id to update
+     * @param string $firstName the first name to update to
+     * @return bool true if successful, else false
+     */
     function updateFirstName($userId, $firstName) {
         return $this->updateDetail($userId, 'first_name', $firstName);
     }
 
-    // Update last_name field of a user
+    /**
+     * Updates the last name field of a user
+     * @param int $userId the user id to update
+     * @param string $lastName the last name to update to
+     * @return bool true if successful, else false
+     */
     function updateLastName($userId, $lastName) {
         return $this->updateDetail($userId, 'last_name', $lastName);
     }
 
-    // Update telephone field of a user
+    /**
+     * Updates the telephone field of a user
+     * @param int $userId the user id to update
+     * @param string $telephone the telephone to update to
+     * @return bool true if successful, else false
+     */
     function updateTelephone($userId, $telephone) {
         return $this->updateDetail($userId, 'telephone', $telephone);
     }
 
-    // Update location field of a user
+    /**
+     * Updates the location field of a user
+     * @param int $userId the user id to update
+     * @param string $location the location to update to
+     * @return bool true if successful, else false
+     */
     function updateLocation($userId, $location) {
         if ($location == '') {
             $location = NULL;
@@ -280,7 +340,12 @@ class DBHandlerUser extends DBHandlerBase {
         return $this->updateDetail($userId, 'location', $location);
     }
 
-    //THIS METHOD IS UNTESTED, AS TYPE = DATE
+    /**
+     * Updates the birthday field of a user
+     * @param int $userId the user id to update
+     * @param string $birthday the birthday to update to
+     * @return bool true if successful, else false
+     */
     function updateBirthday($userId, $birthday) {
         if ($birthday == '') {
             $birthday = NULL;
@@ -288,28 +353,34 @@ class DBHandlerUser extends DBHandlerBase {
         return $this->updateDetail($userId, 'birthday', $birthday);
     }
 
-    //THIS METHOD IS UNTESTED, AS TYPE = BLOB
-    function updatePicture($userId, $picture) {
-        return $this->updateDetail($userId, 'picture', $picture);
-    }
-
-    //THIS METHOD IS UNTESTED, AS TYPE = BLOB
-    function updateCV($userId, $cv) {
-        return $this->updateDetail($userId, 'cv', $cv);
-    }
-
-    // Update competence field of a user
+    /**
+     * Updates the competence field of a user
+     * @param int $userId the user id to update
+     * @param string $competence the competence to update to
+     * @return bool true if successful, else false
+     */
     function updateCompetence($userId, $competence) {
         return $this->updateDetail($userId, 'competence', $competence);
     }
 
+    /**
+     * Hashes and updates the password field of a user
+     * @param int $userId the user id to update
+     * @param string $plainPassword the password to update to
+     * @return bool true if successful, else false
+     */
     function updatePassword($userId, $plainPassword) {
         $hashedPassword = password_hash($plainPassword, PASSWORD_DEFAULT);
         return $this->updateDetail($userId, 'password', $hashedPassword);
     }
 
-    // Toggles whether a user is set as searchable in the user table (sets searchable to 1 if it was 0, 0 if it was 1)
+    /**
+     * Toggles whether a user is set as searchable in the user table (sets searchable to 1 if it was 0, 0 if it was 1)
+     * @param int $userId the user id to update
+     * @return bool true if successful, else false
+     */
     function toggleSearchable($userId) {
+        // SQL statement to toggle searchable
         $sql = '
             UPDATE `user`
             SET searchable = CASE
@@ -331,9 +402,12 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    //Function for search field by searching either for name, mail, or competence
+    /**
+     * Search for a user by name, email or competence
+     * @param string $searchTerm the search term to search for
+     * @return array|false an array with user data if successful, else false
+     */
     function searchForUser($searchTerm) {
-
         //Prepare the SQL statement 
         $sql = "SELECT `first_name`, `last_name`, `email`, `competence`, `picture` 
                 FROM `user` 
@@ -343,9 +417,12 @@ class DBHandlerUser extends DBHandlerBase {
                 OR `competence` LIKE ?) 
                 AND `searchable` = 1";
         $stmt = $this->conn->prepare($sql);
+
         //Binds the same paramaters with the fuction variable
         $searchTerm = "%$searchTerm%";
         $stmt->bind_param("ssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+
+        //If the statement executes, fetch results as an associative array and return the result
         if($stmt->execute()) {
                 $result = $stmt->get_result();
                 $users = $result->fetch_all(MYSQLI_ASSOC);
@@ -358,6 +435,12 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
+    /**
+     * Updates the profile image field of a user
+     * @param int $userId the user id to update
+     * @param string $fileName the file name to update to
+     * @return bool true if successful, else false
+     */
     function updateProfileImage($userId, $fileName) {
         $sql = 'UPDATE `user` SET `picture` = ? WHERE `id` = ?;';
         $stmt = $this->conn->prepare($sql);
@@ -373,6 +456,12 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
+    /**
+     * Updates the CV field of a user
+     * @param int $userId the user id to update
+     * @param string $fileName the file name to update to
+     * @return bool true if successful, else false
+     */
     function updateUserCV($userId, $fileName) {
         $sql = 'UPDATE `user` SET `cv` = ? WHERE `id` = ?;';
         $stmt = $this->conn->prepare($sql);

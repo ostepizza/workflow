@@ -1,6 +1,10 @@
 <?php
 class DBHandlerListing extends DBHandlerBase {
-    // Retrieves an array of published listings where the deadline hasn't passed yet. Returns false if something goes wrong.
+
+    /**
+     * Function to get all active listings
+     * @return array|false with all the active listings or false if something goes wrong
+     */
     function getAllActiveListings() {
         $sql = 'SELECT jl.*, c.name as company_name, jc.title as category_title
             FROM `job_listing` jl
@@ -22,7 +26,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Retrieves all listings from a company id. Returns false if there are no listings or something goes wrong.
+    /**
+     * Function to get all listings from a company
+     * @param int The id of the company
+     * @return array|false with all the listings from a company or false if something goes wrong
+     */
     function getAllCompanyListings($companyId) {
         $sql = 'SELECT jl.*, c.name as company_name, jc.title as category_title
             FROM `job_listing` jl
@@ -44,7 +52,12 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Searches for listings matching a filter word and an array of category IDs. Returns false if something goes wrong.
+    /**
+     * Function to search for listings matching a filter word and an array of category IDs
+     * @param string The filter word
+     * @param array The array of category IDs
+     * @return array|false with all the listings matching the filter word and category IDs or false if something goes wrong
+     */
     function searchListings($filterWord, $categoryIds) {
         // Add % to the beginning and end of the filter word, so it can match words that contain the filter word
         $filterWord = "%" . $filterWord . "%";
@@ -84,9 +97,10 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    
-
-    // Retrieves an array of available job categories. Else returns false.
+    /**
+     * Function to get all the categories
+     * @return array|false with all the categories or false if something goes wrong
+     */
     function getAllCategories() {
         $sql = 'SELECT * FROM `job_category` ORDER BY `title` ASC';
         $stmt = $this->conn->prepare($sql);
@@ -103,7 +117,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Retrieves all listing information from a listing id. Returns an array with the listing info if successful, else returns false.
+    /**
+     * Function to get all the information from a listing
+     * @param int The id of the listing
+     * @return array|false with all the information from a listing or false if something goes wrong
+     */
     function getListing($listingId) {
         // Select all listing info, from both the listing, company and job_category tables
         $sql = 'SELECT l.id, l.name, l.description, l.deadline, l.published, l.views, l.company_id, l.job_category_id, jc.title as job_category_name, c.name as company_name, c.description as company_description
@@ -150,7 +168,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Checks if a listing is published. Returns true if published, else returns false.
+    /**
+     * Function to see if a listing is published
+     * @param int Id of the listing to be checked
+     * @return bool true if listing is published, false if not
+     */
     function isListingPublished($listingId) {
         $sql = 'SELECT `published` FROM `job_listing` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -176,7 +198,7 @@ class DBHandlerListing extends DBHandlerBase {
     /**
      * Function to see if a listing deadline has not passed
      * @param int Id of the listing to be checked
-     * @return bool either true or false depending the deadline has passed
+     * @return bool true if listing deadline has not passed, false if it has
      */
     function isListingDeadlineNotPassed($listingId) {
         $sql = 'SELECT `deadline` FROM `job_listing` WHERE `id` = ?';
@@ -210,7 +232,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Creates a new listing and returns the new listing ID if successful. Else returns false.
+    /**
+     * Creates an empty listing
+     * @param int The id of the company
+     * @return int|false with the id of the new listing or false if something goes wrong
+     */
     function createNewListing($companyId) {
         // Create a new empty listing
         $sql = 'INSERT INTO `job_listing` (`company_id`) VALUES (?)';
@@ -228,7 +254,15 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Updates a listing. Returns true if successful, else returns false.
+    /**
+     * Updates a listing
+     * @param int $listingId The id of the listing
+     * @param string $name The name of the listing
+     * @param string $description The description of the listing
+     * @param string $deadline The deadline of the listing
+     * @param int $jobCategoryId (optional) The id of the category of the listing
+     * @return bool true if successful, false if not
+     */
     function updateListing($listingId, $name, $description, $deadline, $jobCategoryId=NULL) {
         $sql = 'UPDATE `job_listing` SET `name` = ?, `description` = ?, `deadline` = ?, `job_category_id` = ? WHERE `job_listing`.`id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -244,7 +278,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Deletes a listing. Returns true if successful, else returns false.
+    /**
+     * Deletes a listing
+     * @param int The id of the listing
+     * @return bool true if successful, false if not
+     */
     function deleteListing($listingId) {
         $sql = 'DELETE FROM `job_listing` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -260,7 +298,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Toggles the visibility of a listing. Returns true if successful, else returns false. 0 = only visible to company, 1 = visible to all
+    /**
+     * Toggles the visibility of a listing
+     * @param int The id of the listing
+     * @return bool true if successful, false if not
+     */
     function toggleListingPublished($listingId) {
         $sql = '
             UPDATE `job_listing`
@@ -283,7 +325,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Add a view to a listing. Returns true if successful, else returns false.
+    /**
+     * Adds a view to a listing
+     * @param int The id of the listing
+     * @return bool true if successful, false if not
+     */
     function addListingView($listingId) {
         $sql = 'UPDATE `job_listing` SET `views` = `views` + 1 WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -299,7 +345,11 @@ class DBHandlerListing extends DBHandlerBase {
         }
     }
 
-    // Sets the category of a listing. Returns true if successful, else returns false.
+    /**
+     * Sets the category of a listing
+     * @param int $categoryId The id of the category
+     * @param int $listingId The id of the listing
+     */
     function setListingCategory($categoryId, $listingId) {
         $sql = 'UPDATE `job_listing` SET `job_category_id` = ? WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -316,9 +366,9 @@ class DBHandlerListing extends DBHandlerBase {
 
 
     /**
-     * Gets everything from a specific category
+     * Checks if a category id exist in the DB
      * @param int Id for the category in the DB
-     * @return bool True or false depending on if the id exist for the category
+     * @return bool True if the category id exist in the DB, false if not
      */
     function checkCategoryId($categoryId) {
         $sql = 'SELECT * FROM `job_category` WHERE `id` = ?';

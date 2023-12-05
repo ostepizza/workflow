@@ -1,8 +1,8 @@
 <?php
 class DBHandlerStatistics extends DBHandlerBase {
     /** 
-     * Gets the total view count for all joblistings
-     * @return int the number of views for all joblistings
+     * Gets the total view count for all job listings in the system
+     * @return int the number of views for all job listings in system
     */
     function getSystemTotalViews() {
         $sql = 'SELECT SUM(views) as total_views FROM `job_listing`';
@@ -15,8 +15,8 @@ class DBHandlerStatistics extends DBHandlerBase {
     }
 
     /**
-     * Get the total number of all published joblistings
-     * @return int number of all published joblistings
+     * Get the total number of all published job listings in the system
+     * @return int number of all published job listings in system
      */
     function getSystemPublishedListingsCount() {
         $sql = 'SELECT COUNT(*) as published_listings FROM `job_listing` WHERE `published` = 1';
@@ -30,8 +30,8 @@ class DBHandlerStatistics extends DBHandlerBase {
 
 
     /**
-     * Get the total number of all appilcations sent
-     * @return int number of applications 
+     * Get the total number of all applications sent in the system
+     * @return int number of applications in system 
      */
     function getSystemTotalApplicationsSent() {
         $sql = 'SELECT COUNT(*) as total_applications FROM `job_application`';
@@ -45,7 +45,7 @@ class DBHandlerStatistics extends DBHandlerBase {
 
 
     /**
-     * Get the amount of compinies
+     * Get the amount of companies registered in the system
      * @return int returns the number of registered companies
      */
     function getSystemTotalCompanies() {
@@ -59,9 +59,9 @@ class DBHandlerStatistics extends DBHandlerBase {
     }
 
     /**
-     * Get the total amount of views per company
+     * Get the total amount of listing views of a company
      * @param int the id of the company
-     * @return int number of view per company
+     * @return int number of listing views
      */
     function getCompanyTotalViews($companyId) {
         $sql = 'SELECT SUM(views) as total_views FROM `job_listing` WHERE `company_id` = ?';
@@ -125,7 +125,11 @@ class DBHandlerStatistics extends DBHandlerBase {
         return $receivedApplications;
     }
     
-    // Returns company statistics in an array, like number of listings, number of views, etc. Returns false if something goes wrong.
+    /**
+     * Get the statistics for a company
+     * @param int The id of the company
+     * @return array An array of statistics for a company
+     */
     function getCompanyStatistics($companyId) {
         return [
             'total_views' => $this->getCompanyTotalViews($companyId),
@@ -141,7 +145,7 @@ class DBHandlerStatistics extends DBHandlerBase {
      * @return int Gets a number of applications a user has sent
      */
     function getUserTotalApplicationsSent($userId) {
-        $sql = 'SELECT COUNT(*) as total_applications FROM `job_application` WHERE `user_id` = ?';
+        $sql = 'SELECT COUNT(*) as total_applications FROM `job_application` WHERE `user_id` = ? AND `sent` = 1';
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $userId);
         $stmt->execute();
