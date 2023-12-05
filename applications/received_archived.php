@@ -84,7 +84,7 @@ global $archivedApplicants;
             ?>
             <div class="card mt-4">
                 <div class="card-header">
-                    <b><?php echo $applicant["title"]; ?></b>
+                    <b><?php echo $applicant["title"]; ?></b> <?php if(!empty($applicant['cv'])) { echo'<span class="badge bg-primary">Has CV</span>'; } ?>
                 </div>
                 <div class="card-body">
                     <div class="row">

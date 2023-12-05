@@ -11,8 +11,8 @@ CREATE TABLE `user` (
     `telephone` varchar(255) DEFAULT NULL,
     `location` varchar(255) DEFAULT NULL,
     `birthday` date DEFAULT NULL,
-    `picture` varchar(255) DEFAULT NULL,
-    `cv` longblob DEFAULT NULL,
+    `picture` varchar(1000) DEFAULT NULL,
+    `cv` varchar(1000) DEFAULT NULL,
     `searchable` TINYINT(1) DEFAULT 0 NOT NULL,
     `competence` VARCHAR(5000) DEFAULT NULL,
     PRIMARY KEY (`id`)

@@ -22,6 +22,9 @@ if(!empty($_SESSION['user_id'])) {
 if (isset($_GET["updatedImage"])) {
     $feedbackForUser = 'Your profile picture has been successfully updated.<br>';
     $feedbackColor = 'success';
+} else if (isset($_GET["updatedResume"])) {
+    $feedbackForUser = 'Your resume has been successfully updated.<br>';
+    $feedbackColor = 'success';
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -33,12 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Check if file is a jpg or png
         if ($fileType != 'image/jpeg' && $fileType != 'image/png') {
-            $feedbackForUser .= "Invalid file type. Only JPG and PNG types are accepted.<br>";
+            $feedbackForUser = "Invalid file type. Only JPG and PNG types are accepted.<br>";
             $feedbackColor = "danger";
         } 
         // Check if file is under 10MB
         else if ($fileSize > 10485760) { // 10MB in bytes
-            $feedbackForUser .= "Image too large. Image must be less than 10MB.<br>";
+            $feedbackForUser = "Image too large. Image must be less than 10MB.<br>";
             $feedbackColor = "danger";
         } 
         else {  
@@ -61,17 +64,67 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header('location: upload_image.php?updatedImage');
                     exit();
                 } else {
-                    $feedbackForUser .= "There was an error updating the database.<br>";
+                    $feedbackForUser = "There was an error updating the database.<br>";
                     $feedbackColor = "danger";
                 }
 
             } else {
-                $feedbackForUser .= "There was an error moving the uploaded image.<br>";
+                $feedbackForUser = "There was an error moving the uploaded image.<br>";
                 $feedbackColor = "danger";
             }
         }
     } else {
-        $feedbackForUser .= "No image uploaded.<br>";
+        $feedbackForUser = "No image selected.<br>";
+        $feedbackColor = "danger";
+    }
+
+    if (isset($_FILES['cvToUpload']) && $_FILES['cvToUpload']['error'] == 0) {
+        // Set up variables for the uploaded file
+        $fileTmpPath = $_FILES['cvToUpload']['tmp_name'];
+        $fileSize = $_FILES['cvToUpload']['size'];
+        $fileType = mime_content_type($fileTmpPath);
+
+        // Check if file is a PDF
+        if ($fileType != 'application/pdf') {
+            $feedbackForUser = "Invalid file type. Only PDF types are accepted.<br>";
+            $feedbackColor = "danger";
+        } 
+        // Check if file is under 20MB
+        else if ($fileSize > 20971520) { // 20MB in bytes
+            $feedbackForUser.= "File too large. File must be less than 20MB.<br>";
+            $feedbackColor = "danger";
+        } 
+        else {
+            // The file is valid. First delete old file data (if there is any)
+            if (!empty($userInfo['cv'])) {
+                $oldFile = '../assets/pdf/user/' . $userInfo['cv'];
+                if (file_exists($oldFile)) {
+                    unlink($oldFile);
+                }
+            }
+            // Move the new file to the CV directory
+            $fileName = $_SESSION['user_id'] . '-' . $_FILES['cvToUpload']['name'];
+            $destination = '../assets/pdf/user/' . $fileName;
+
+            if (move_uploaded_file($fileTmpPath, $destination)) {
+                // If successfully moved, update the database
+                if ($dbhu->updateUserCV($_SESSION['user_id'], $fileName)) {
+                    // If successfully updated DB, redirect to page with feedback
+                    header('location: user_files.php?updatedResume');
+                    exit();
+                } else {
+                    $feedbackForUser = "There was an error updating the database.<br>";
+                    $feedbackColor = "danger";
+                }
+        
+            } else {
+                $feedbackForUser = "There was an error moving the uploaded file.<br>";
+                $feedbackColor = "danger";
+            }
+        }
+
+    } else {
+        $feedbackForUser = "No resume selected.<br>";
         $feedbackColor = "danger";
     }
 }
@@ -117,7 +170,34 @@ global $userInfo;
     </div>
 
     <div class="col-md-6">
-        
+        <h2>Resume</h2>
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <?php
+                if (isset($userInfo['cv'])) {
+                    echo 'You have already uploaded your resume. Uploading a new one will overwrite the old.<br>';
+                    echo '<a href="../assets/pdf/user/' . $userInfo['cv'] . '" class="btn btn-primary w-100" role="button">View resume</a>';
+                } else {
+                    echo 'You have not yet uploaded a resume.<br>';
+                }
+                ?>
+                <br>
+                <hr>
+                <br>
+                <form action="" method="post" enctype="multipart/form-data">
+                    Select file to upload:
+                    <input type="file" name="cvToUpload" id="cvToUpload" class="w-100 p-3 rounded border border-secondary mb-3">
+                    <br>
+                    <input type="submit" value="Upload File" name="submit" class="btn btn-primary w-100">
+                </form>
+            </div>
+            <div class="col-md-6">
+            Allowed file types for resume:<br>
+            - PDF<br>
+            Max size is 20MB.
+            </div>
+        </div>
     </div>
 </div>
 <?php

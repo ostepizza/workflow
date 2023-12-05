@@ -358,10 +358,25 @@ class DBHandlerUser extends DBHandlerBase {
         }
     }
 
-    function updateProfileImage($userid, $fileName) {
+    function updateProfileImage($userId, $fileName) {
         $sql = 'UPDATE `user` SET `picture` = ? WHERE `id` = ?;';
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('si', $fileName, $userid);
+        $stmt->bind_param('si', $fileName, $userId);
+
+        // If the statement successfully executes, return true. If something somehow goes wrong, return false.
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            $stmt->close();
+            return false;
+        }
+    }
+
+    function updateUserCV($userId, $fileName) {
+        $sql = 'UPDATE `user` SET `cv` = ? WHERE `id` = ?;';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('si', $fileName, $userId);
 
         // If the statement successfully executes, return true. If something somehow goes wrong, return false.
         if ($stmt->execute()) {
