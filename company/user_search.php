@@ -4,6 +4,7 @@ include_once '../assets/include/template.php';
 // Include and establish connection with DB
 include_once '../assets/include/DBHandler.php';
 $dbhu = new DBHandlerUser();
+$dbhc = new DBHandlerCompany();
 
 // Include form input validator
 include_once '../assets/include/Validator.php';
@@ -12,6 +13,12 @@ $validator = new Validator();
 // Set up default feedback
 $feedbackForUser = NULL;
 $feedbackColor = "danger";
+
+// Check if the user is a part of a company
+if (!$company = $dbhc->getCompanyDetailsFromUserId($_SESSION['user_id'])) {
+    // Redirect if successfully created a new listing
+    header('Location: ../403.php');
+}
 
 if (isset($_POST["search"])) {
     // Needs to be validated:
