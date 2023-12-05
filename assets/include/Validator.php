@@ -230,6 +230,16 @@ class Validator {
         $this->validateGenericField($description, 'Description', 5000);
     }
 
+    //Validates the title when a user is writing a title on job applications
+    function validateJobApplicationTitle($title) {
+        $this->validateGenericField($title, 'Title', 200);
+    }
+
+    //Validates the title when a user is writing a description on job applications
+    function validateJobApplicationDescription($description) {
+        $this->validateGenericField($description, 'Description', 6500);
+    }
+
     /*
         Based upon the validateBirthday()-method, but accepts only future dates instead.
         Used to validate a job listing deadline, by setting valid to false if the format is wrong or date is before today

@@ -98,7 +98,7 @@ if ($companyId = $dbhc->getCompanyIdFromUserId($_SESSION['user_id'])){
                                     ' . $listing['category_title'] . '
                                 </div>
                                 <div class="col-md-3">
-                                    <a href="#"><button type="button" class="btn btn-primary w-100">View applications</button></a>
+                                    <a href="../applications/received.php/?id='.$listing["id"].'"><button type="button" class="btn btn-primary w-100">View applications</button></a>
                                     <a href="../jobs/edit.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Edit listing</button></a>
                                     <a href="../jobs/listing.php?id='.$listing['id'].'"><button type="button" class="btn btn-secondary w-100 mt-2">Preview listing</button></a>
                                 </div>
