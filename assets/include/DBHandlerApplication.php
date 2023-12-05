@@ -1,6 +1,10 @@
 <?php
 class DBHandlerApplication extends DBHandlerBase {
-    // Creates a new application and returns the new application ID if successful. Else returns false.
+
+    /**
+     * Creates a new application. Returns the application id if successful, else returns false.
+     * @return int|false The id of the created application
+     */
     function createNewApplication($listingId, $userId) {
         // Create a new empty application
         $sql = 'INSERT INTO `job_application` (`job_listing_id`, `user_id`) VALUES (?, ?)';
@@ -18,8 +22,11 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
-    // Retrieves all applications from a user id. Returns an array with the applications if successful, else returns false.
-    // TODO: This is broken, fix it
+    /**
+     * Retrieves all applications from a user id. Returns an array with the applications if successful, else returns false.
+     * @param int Id for the users
+     * @return array|false Arrays containing information about selected users
+     */ 
     function getAllUserApplications($userId) {
         $sql = 'SELECT ja.*, jl.name as listing_name, jl.company_id, jl.deadline, jl.published, jl.views, c.name as company_name, c.description as company_description
             FROM `job_application` ja
@@ -41,8 +48,11 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
-    // Retrieves all applications from a listing id. Returns an array with the applications if successful, else returns false.
-    // Todo: Possibility to retrieve archived applications
+    /**
+     * Gets all the applications per listing
+     * @param int Id for the job listing
+     * @return array|false Information about the applications/user stored in arrays
+     */
     function getAllListingApplications($listingId, $archived = false, $pinned = false) {
         // Retrieve all applications from a listing id, with all the user information
         $sql = 'SELECT ja.*, u.first_name, u.last_name, u.email, u.telephone, u.location, u.birthday, u.picture, u.cv, u.competence, c.name as company_name
@@ -81,7 +91,10 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
-    // Retrieves an application by application id. Returns an array with the application if successful, else returns false.
+    /**
+     * Retrieves an application by application id.
+     * @return array|false  information about an application in an array 
+     */
     function getApplication($applicationId) {
         $sql = 'SELECT ja.*, 
             u.first_name, u.last_name, u.email, u.telephone, u.location, u.birthday, u.picture, u.cv, u.competence, 
@@ -109,6 +122,7 @@ class DBHandlerApplication extends DBHandlerBase {
      /** 
      * Updates either an empty or already filled application. Doesn't send the application
      * @param int ID for application that gets updated
+     * @return bool True if successful, else false
      */
     function updateApplicationContent($applicationId, $title, $description) {
         $sql = 'UPDATE `job_application` SET `title` = ?, `text` = ? WHERE `job_application`.`id` = ?';
@@ -176,7 +190,7 @@ class DBHandlerApplication extends DBHandlerBase {
     /**
      * Sets an application as archived in DB
      * @param int ID for application that gets archived
-     * Returns true if successful
+     * Returns true if successful or false if not
      */
     function toggleApplicationArchived($applicationId) {
         $sql = '
@@ -203,7 +217,7 @@ class DBHandlerApplication extends DBHandlerBase {
     /**
      * Sets an application as pinned in the DB
      * @param int The id of the application that is going to be set as pinned
-     * Returns true if pinned successfully
+     * Returns true if pinned successfully or false if not
     */
     function toggleApplicationPinned($applicationId) {
         $sql = '
@@ -227,7 +241,11 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
-    //Get the counter over how many applications there are in a listing
+    /**
+     * Get the amount of applications received for a listing
+     * @param int The id of the listing
+     * @return int|false The amount of applications received
+     */
     function getListingApplicationCount($listingId) {
         $sql = 'SELECT COUNT(*) as applications_received FROM `job_application` WHERE `job_listing_id` = ?';
         $stmt = $this->conn->prepare($sql);
