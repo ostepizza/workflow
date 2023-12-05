@@ -113,7 +113,7 @@ class DBHandlerCompany extends DBHandlerBase {
      * @param int $companyId the id of the company
      * @param int $userId the id of the user
      * @return bool true if successful, else returns false.
-     */
+	 */
     function toggleUserSuperuser($companyId, $userId) {
         $sql = '
             UPDATE `company_management`
