@@ -1,6 +1,13 @@
 <?php
 class DBHandlerCompany extends DBHandlerBase {
-    // Creates a new company with a name, description, and the id of the user requesting it. Returns true if successful, else returns false.
+
+    /**
+     * Creates a new company with a name, description, and the id of the user requesting it.
+     * @param string $name the name of the company
+     * @param string $description the description of the company
+     * @param int $userId the id of the user requesting the company
+     * @return bool true if successful, else returns false.
+     */
     function createNewCompany($name, $description, $userId) {
         // Prepare, bind and execute the SQL statement
         $sql = 'INSERT INTO `company` (`id`, `name`, `description`) VALUES (NULL, ?, ?)';
@@ -37,12 +44,12 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    /*
-        Function to retrieve a company id from a user id.
-        Can be used to just check if a user is a part of any company as well.
-        Returns the companyid if found,
-        else it returns false.
-    */
+    /**
+     * Retrieves the company id from a user id.
+     * Can be used to just check if a user is a part of any company as well.
+     * @param int $userid the id of the user
+     * @return int the id of the company the user is a part of (if found), else returns false.
+     */
     function getCompanyIdFromUserId($userid) {
         // Ask database if logged in member is found in the company_management table
         $sql = 'SELECT `company_id` FROM `company_management` WHERE `user_id` = ?';
@@ -68,7 +75,11 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Returns true if user is a superuser of a company, else returns false
+    /**
+     * Checks if a user is a superuser of a company.
+     * @param int $userId the id of the user
+     * @return bool true if user is a superuser, else returns false.
+     */
     function isUserCompanySuperuser($userId) {
         // Ask database if logged in member is found in the company_management table
         $sql = 'SELECT `superuser` FROM `company_management` WHERE `user_id` = ?';
@@ -97,7 +108,12 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Toggles whether a company user is a superuser or not. Returns true if successful, else returns false.
+    /**
+     * Toggles whether a company user is a superuser or not.
+     * @param int $companyId the id of the company
+     * @param int $userId the id of the user
+     * @return bool true if successful, else returns false.
+	 */
     function toggleUserSuperuser($companyId, $userId) {
         $sql = '
             UPDATE `company_management`
@@ -120,12 +136,12 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    /*
-        Function to retrieve company name and description from a company id.
-        Can be used to just check if a company with id n exists as well.
-        Returns an array with the company name and description if found,
-        else it returns false.
-    */
+    /**
+     * Retrieves company name and description from a company id.
+     * Can be used to just check if a company with id n exists as well.
+     * @param int $companyId the id of the company
+     * @return array an array with the company name and description if found, else it returns false.
+     */
     function getCompanyDetailsFromCompanyId($companyId) {
         $sql = 'SELECT `id`, `name`, `description` FROM `company` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -158,16 +174,23 @@ class DBHandlerCompany extends DBHandlerBase {
         return false;
     }
 
-    // Returns an array with company name and description if user is a part of a company. Else, returns false.
+    /**
+     * Retrieves company name and description from a user id.
+     * Can be used to just check if a user is a part of any company as well.
+     * @param int $userId the id of the user
+     * @return array|false an array with the company name and description if found, else it returns false.
+     */
     function getCompanyDetailsFromUserId($userId) {
         $companyId = $this->getCompanyIdFromUserId($userId);
         return $companyDetails = $this->getCompanyDetailsFromCompanyId($companyId);
     }
 
-    /*
-        Returns true if a company name is already taken, else returns false if it's available
-        Optional parameter companyId can be used to exclude a company from the search, in case a company name is being updated.
-    */
+    /**
+     * Checks if a company name is already taken.
+     * @param string $name the name to check
+     * @param int $companyId (optional) id of a company company to exclude
+     * @return bool true if the name is taken, else returns false.
+     */
     function isCompanyNameTaken($name, $companyId = NULL) {
         // Set up the basic SQL query
         $sql = 'SELECT * FROM `company` WHERE LOWER(`name`) = LOWER(?)';
@@ -201,7 +224,13 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Update a company field, using the company id, what column to update and what value to update
+    /**
+     * Updates a company detail using the company id, what detail to update and what value to update it to.
+     * @param int $companyId the id of the company
+     * @param string $detail the detail to update
+     * @param string $updatedDetail the value to update the detail to
+     * @return bool true if successful, else returns false.
+     */
     function updateCompanyDetailWithCompanyId($companyId, $detail, $updatedDetail) {
         $sql = 'UPDATE `company` SET `' . $detail . '` = ? WHERE `company`.`id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -217,18 +246,31 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Updates a company name using company id and the new name
+    /**
+     * Updates a company name using company id and the new name
+     * @param int $companyId the id of the company
+     * @param string $newCompanyName the new name of the company
+     * @return bool true if successful, else returns false.
+     */
     function updateCompanyNameWithCompanyId($companyId, $newCompanyName) {
-        //TODO: check if company name is taken and return false if so
         return $this->updateCompanyDetailWithCompanyId($companyId, 'name', $newCompanyName);
     }
 
-    // Updates a company name using company id and the new name
+    /**
+     * Updates a company description using company id and the new description
+     * @param int $companyId the id of the company
+     * @param string $newCompanyDescription the new description of the company
+     * @return bool true if successful, else returns false.
+     */
     function updateCompanyDescriptionWithCompanyId($companyId, $newCompanyDescription) {
         return $this->updateCompanyDetailWithCompanyId($companyId, 'description', $newCompanyDescription);
     }
 
-    // Deletes a company using the company id. Returns true if successful, else returns false.
+    /**
+     * Deletes a company using the company id.
+     * @param int $companyId the id of the company
+     * @return bool true if successful, else returns false.
+     */
     function deleteCompanyById($companyId) {
         $sql = 'DELETE FROM `company` WHERE `id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -240,7 +282,12 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Adds a new user to a company, with the users email and a company id. Returns true if successful, else returns false.
+    /**
+     * Adds a new user to a company, with the users email and a company id.
+     * @param string $email the email of the user
+     * @param int $companyId the id of the company
+     * @return bool true if successful, else returns false.
+     */
     function addNewUserToCompany($email, $companyId) {
         // Create a new DBHandlerUser object to retrieve the user id from the email, then destroy the object
         $dbhu = new DBHandlerUser();
@@ -264,7 +311,12 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Removes a user from a company, using the company id and the user id. Returns true if successful, else returns false.
+    /**
+     * Removes a user from a company, using the company id and the user id.
+     * @param int $companyId the id of the company
+     * @param int $userId the id of the user
+     * @return bool true if successful, else returns false.
+     */
     function removeUserFromCompany($companyId, $userId) {
         $sql = 'DELETE FROM `company_management` WHERE `company_id` = ? AND `user_id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -277,7 +329,11 @@ class DBHandlerCompany extends DBHandlerBase {
         }
     }
 
-    // Retrieves all company users as an array. Returns false if something goes wrong.
+    /**
+     * Retrieves all users from a company, using the company id.
+     * @param int $companyId the id of the company
+     * @return array|false an array with all the users if successful, else returns false.
+     */
     function retrieveAllCompanyUsers($companyId) {
         // Select userdata from DB from the company ID.
         $sql = 'SELECT u.id, u.first_name, u.last_name, u.email, cm.superuser
