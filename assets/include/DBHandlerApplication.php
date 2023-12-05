@@ -270,6 +270,11 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
+    /**
+     * Deletes an application
+     * @param int $applicationId The id of the application that is going to be deleted
+     * @return bool True if deleted successfully or false if not
+     */
     function deleteApplication($applicationId) {
         $sql = 'DELETE FROM `job_application` WHERE `job_application`.`id` = ?';
         $stmt = $this->conn->prepare($sql);
@@ -285,6 +290,11 @@ class DBHandlerApplication extends DBHandlerBase {
         }
     }
 
+    /**
+     * Deletes all drafts that are past the deadline, from a specific user
+     * @param int $userId The id of the user that owns the drafts
+     * @return bool True if deleted successfully or false if not
+     */
     function deleteAnyDraftsPastDeadline($userId) {
         $sql = 'DELETE ja FROM `job_application` ja
             JOIN `job_listing` jl ON ja.job_listing_id = jl.id
